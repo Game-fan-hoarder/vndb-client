@@ -1,0 +1,7 @@
+{
+  "database": "dolt",
+  "backend": "dolt",
+  "dolt_mode": "embedded",
+  "dolt_database": "vndb_client",
+  "project_id": "da9aa411-29ee-401b-87c4-7cfb4088040d"
+}

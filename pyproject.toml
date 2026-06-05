@@ -17,6 +17,10 @@ classifiers = [
     "Programming Language :: Python :: 3.14",
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
+dependencies = [
+    "httpx>=0.27",
+    "pydantic>=2.7",
+]
 
 [project.urls]
 Homepage = "https://HOZHENWAI.github.io/vndb-client/"

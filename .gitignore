@@ -1,5 +1,8 @@
 docs/source
 
+# Git worktrees (isolated feature workspaces)
+.worktrees/
+
 # From https://raw.githubusercontent.com/github/gitignore/main/Python.gitignore
 
 # Byte-compiled / optimized / DLL files

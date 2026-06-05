@@ -135,3 +135,30 @@ def test_async_wraps_network_error():
 
     with pytest.raises(VndbNetworkError):
         _run(scenario())
+
+
+def test_async_close_only_closes_owned_client():
+    async def scenario():
+        injected = _mock_async_client(lambda r: httpx.Response(200, json={}))
+        transport = AsyncTransport(http_client=injected)
+        await transport.aclose()
+        assert injected.is_closed is False  # injected client left open
+        await injected.aclose()
+
+    _run(scenario())
+
+
+def test_async_raises_after_exhausting_retries():
+    def handler(request):
+        return httpx.Response(429, text="slow down")
+
+    async def scenario():
+        transport = AsyncTransport(http_client=_mock_async_client(handler), retry=RetryConfig(max_attempts=2))
+        try:
+            await transport.send(SPEC)
+        finally:
+            await transport.aclose()
+
+    with pytest.raises(VndbRateLimitError) as info:
+        _run(scenario())
+    assert info.value.status_code == 429

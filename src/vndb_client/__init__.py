@@ -13,7 +13,7 @@ from vndb_client.exceptions import (
     VndbRateLimitError,
     VndbServerError,
 )
-from vndb_client.models import Page
+from vndb_client.models import Page, VndbModel
 
 __all__ = [
     "AsyncClient",
@@ -24,6 +24,7 @@ __all__ = [
     "VndbAuthError",
     "VndbBadRequestError",
     "VndbError",
+    "VndbModel",
     "VndbNetworkError",
     "VndbNotFoundError",
     "VndbParseError",

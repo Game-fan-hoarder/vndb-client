@@ -20,6 +20,8 @@ class VndbModel(BaseModel):
 class Page(BaseModel, Generic[T]):
     """The VNDB query response envelope."""
 
+    model_config = ConfigDict(extra="ignore")
+
     results: list[T]
     more: bool = False
     count: int | None = None

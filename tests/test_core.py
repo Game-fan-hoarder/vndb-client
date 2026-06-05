@@ -92,7 +92,7 @@ def test_retry_on_transient_5xx_and_network():
     assert _policy().next(attempt=1, status=None, exc=httpx.ConnectError("x"))[0] is True
 
 
-def test_no_retry_on_client_errors():
+def test_no_retry_on_non_retryable_statuses():
     for status in (400, 401, 404, 500):
         assert _policy().next(attempt=1, status=status, exc=None)[0] is False
 

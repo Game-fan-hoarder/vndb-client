@@ -32,6 +32,7 @@ def _build_headers(token: str | None, user_agent: str) -> dict[str, str]:
 
 
 def _retry_after(response: httpx.Response) -> float | None:
+    # Only numeric "seconds" form is supported; HTTP-date values fall back to exponential backoff.
     raw = response.headers.get("retry-after")
     if raw is None:
         return None

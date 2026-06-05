@@ -18,6 +18,7 @@ def test_public_exports_present():
         "VndbServerError",
         "VndbNetworkError",
         "VndbParseError",
+        "VndbModel",
     ):
         assert hasattr(vndb_client, name), name
         assert name in vndb_client.__all__

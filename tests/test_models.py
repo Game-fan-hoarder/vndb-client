@@ -23,9 +23,7 @@ def test_vndbmodel_populates_by_field_name():
 
 
 def test_page_parses_results_more_and_count():
-    page = Page[_Dummy].model_validate(
-        {"results": [{"id": "v1"}, {"id": "v2"}], "more": True, "count": 2}
-    )
+    page = Page[_Dummy].model_validate({"results": [{"id": "v1"}, {"id": "v2"}], "more": True, "count": 2})
     assert page.more is True
     assert page.count == 2
     assert [r.id for r in page.results] == ["v1", "v2"]

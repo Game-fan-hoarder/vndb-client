@@ -14,6 +14,7 @@ from vndb_client.config import (
     PROD_BASE_URL,
     RetryConfig,
 )
+from vndb_client.exceptions import VndbParseError
 from vndb_client.models import Page
 
 ModelT = TypeVar("ModelT", bound=BaseModel)
@@ -44,7 +45,11 @@ class Client:
     def _query(self, endpoint: str, model: type[ModelT], **params: Any) -> Page[ModelT]:
         spec = core.build_query_request(endpoint, **params)
         response = self._transport.send(spec)
-        return core.parse_page(response.json(), model)
+        try:
+            raw = response.json()
+        except ValueError as exc:
+            raise VndbParseError(str(exc)) from exc
+        return core.parse_page(raw, model)
 
     def close(self) -> None:
         self._transport.close()
@@ -86,7 +91,11 @@ class AsyncClient:
     async def _query(self, endpoint: str, model: type[ModelT], **params: Any) -> Page[ModelT]:
         spec = core.build_query_request(endpoint, **params)
         response = await self._transport.send(spec)
-        return core.parse_page(response.json(), model)
+        try:
+            raw = response.json()
+        except ValueError as exc:
+            raise VndbParseError(str(exc)) from exc
+        return core.parse_page(raw, model)
 
     async def aclose(self) -> None:
         await self._transport.aclose()

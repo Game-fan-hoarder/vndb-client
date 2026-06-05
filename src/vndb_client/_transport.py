@@ -37,9 +37,10 @@ def _retry_after(response: httpx.Response) -> float | None:
     if raw is None:
         return None
     try:
-        return float(raw)
+        value = float(raw)
     except ValueError:
         return None
+    return value if value >= 0 else None
 
 
 class SyncTransport:

@@ -162,3 +162,28 @@ def test_async_raises_after_exhausting_retries():
     with pytest.raises(VndbRateLimitError) as info:
         _run(scenario())
     assert info.value.status_code == 429
+
+
+# ---------------------------------------------------------------------------
+# Bug 1: negative Retry-After must return None (not crash time.sleep)
+# ---------------------------------------------------------------------------
+
+
+def test_retry_after_negative_returns_none():
+    response = httpx.Response(429, headers={"Retry-After": "-5"}, text="slow")
+    assert _transport._retry_after(response) is None
+
+
+def test_retry_after_positive_returns_float():
+    response = httpx.Response(429, headers={"Retry-After": "5"}, text="slow")
+    assert _transport._retry_after(response) == 5.0
+
+
+def test_retry_after_missing_returns_none():
+    response = httpx.Response(429, text="slow")
+    assert _transport._retry_after(response) is None
+
+
+def test_retry_after_zero_returns_zero():
+    response = httpx.Response(429, headers={"Retry-After": "0"}, text="slow")
+    assert _transport._retry_after(response) == 0.0

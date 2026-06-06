@@ -48,25 +48,23 @@ def build_query_request(
     page: int | None = None,
     count: bool | None = None,
     user: str | None = None,
+    compact_filters: bool | None = None,
+    normalized_filters: bool | None = None,
 ) -> RequestSpec:
     """Serialize the standard VNDB query parameters into a POST request spec."""
-    body: dict[str, Any] = {}
-    if filters is not None:
-        body["filters"] = filters
-    if fields is not None:
-        body["fields"] = fields
-    if sort is not None:
-        body["sort"] = sort
-    if reverse is not None:
-        body["reverse"] = reverse
-    if results is not None:
-        body["results"] = results
-    if page is not None:
-        body["page"] = page
-    if count is not None:
-        body["count"] = count
-    if user is not None:
-        body["user"] = user
+    candidates: dict[str, Any] = {
+        "filters": filters,
+        "fields": fields,
+        "sort": sort,
+        "reverse": reverse,
+        "results": results,
+        "page": page,
+        "count": count,
+        "user": user,
+        "compact_filters": compact_filters,
+        "normalized_filters": normalized_filters,
+    }
+    body = {k: v for k, v in candidates.items() if v is not None}
     return RequestSpec(method="POST", path=f"/{endpoint.lstrip('/')}", json=body)
 
 

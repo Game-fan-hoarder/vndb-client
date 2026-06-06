@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from types import TracebackType
-from typing import Any, TypeVar
+from typing import Any, TypeVar, cast
 
 import httpx
 from pydantic import BaseModel
@@ -23,6 +23,7 @@ from vndb_client.entities.tag import Tag
 from vndb_client.entities.trait import Trait
 from vndb_client.entities.vn import VN
 from vndb_client.exceptions import VndbParseError
+from vndb_client.meta import AuthInfo, Stats, UlistLabel, User
 from vndb_client.models import Page
 from vndb_client.resource import AsyncQueryResource, QueryResource
 
@@ -67,6 +68,35 @@ class Client:
         except ValueError as exc:
             raise VndbParseError(str(exc)) from exc
         return core.parse_page(raw, model)
+
+    def _get(self, path: str, *, params: dict[str, Any] | None = None) -> Any:
+        clean = {key: value for key, value in (params or {}).items() if value is not None}
+        spec = core.RequestSpec(method="GET", path=f"/{path.lstrip('/')}", params=clean or None)
+        response = self._transport.send(spec)
+        try:
+            return response.json()
+        except ValueError as exc:
+            raise VndbParseError(str(exc)) from exc
+
+    def stats(self) -> Stats:
+        return Stats.model_validate(self._get("stats"))
+
+    def authinfo(self) -> AuthInfo:
+        return AuthInfo.model_validate(self._get("authinfo"))
+
+    def get_user(self, q: str | list[str], *, fields: str | None = None) -> dict[str, User | None]:
+        raw = self._get("user", params={"q": q, "fields": fields})
+        result: dict[str, User | None] = {}
+        for key, value in raw.items():
+            result[key] = User.model_validate(value) if value is not None else None
+        return result
+
+    def ulist_labels(self, user: str | None = None, *, fields: str | None = None) -> list[UlistLabel]:
+        raw = self._get("ulist_labels", params={"user": user, "fields": fields})
+        return [UlistLabel.model_validate(item) for item in raw["labels"]]
+
+    def schema(self) -> dict[str, Any]:
+        return cast("dict[str, Any]", self._get("schema"))
 
     def close(self) -> None:
         self._transport.close()
@@ -121,6 +151,35 @@ class AsyncClient:
         except ValueError as exc:
             raise VndbParseError(str(exc)) from exc
         return core.parse_page(raw, model)
+
+    async def _get(self, path: str, *, params: dict[str, Any] | None = None) -> Any:
+        clean = {key: value for key, value in (params or {}).items() if value is not None}
+        spec = core.RequestSpec(method="GET", path=f"/{path.lstrip('/')}", params=clean or None)
+        response = await self._transport.send(spec)
+        try:
+            return response.json()
+        except ValueError as exc:
+            raise VndbParseError(str(exc)) from exc
+
+    async def stats(self) -> Stats:
+        return Stats.model_validate(await self._get("stats"))
+
+    async def authinfo(self) -> AuthInfo:
+        return AuthInfo.model_validate(await self._get("authinfo"))
+
+    async def get_user(self, q: str | list[str], *, fields: str | None = None) -> dict[str, User | None]:
+        raw = await self._get("user", params={"q": q, "fields": fields})
+        result: dict[str, User | None] = {}
+        for key, value in raw.items():
+            result[key] = User.model_validate(value) if value is not None else None
+        return result
+
+    async def ulist_labels(self, user: str | None = None, *, fields: str | None = None) -> list[UlistLabel]:
+        raw = await self._get("ulist_labels", params={"user": user, "fields": fields})
+        return [UlistLabel.model_validate(item) for item in raw["labels"]]
+
+    async def schema(self) -> dict[str, Any]:
+        return cast("dict[str, Any]", await self._get("schema"))
 
     async def aclose(self) -> None:
         await self._transport.aclose()

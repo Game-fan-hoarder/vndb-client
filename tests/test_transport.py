@@ -187,3 +187,50 @@ def test_retry_after_missing_returns_none():
 def test_retry_after_zero_returns_zero():
     response = httpx.Response(429, headers={"Retry-After": "0"}, text="slow")
     assert _transport._retry_after(response) == 0.0
+
+
+def _counting_handler():
+    calls = {"n": 0}
+
+    def handler(request):
+        calls["n"] += 1
+        return httpx.Response(200, json={"results": [], "more": False})
+
+    return calls, handler
+
+
+def test_cache_serves_repeated_read_once():
+    calls, handler = _counting_handler()
+    t = SyncTransport(http_client=_mock_client(handler), cache_ttl=60.0)
+    t.send(SPEC)
+    t.send(SPEC)
+    assert calls["n"] == 1  # second read served from cache
+
+
+def test_cache_disabled_hits_network_each_time():
+    calls, handler = _counting_handler()
+    t = SyncTransport(http_client=_mock_client(handler))  # no cache_ttl
+    t.send(SPEC)
+    t.send(SPEC)
+    assert calls["n"] == 2
+
+
+def test_cache_bypassed_for_writes():
+    calls, handler = _counting_handler()
+    t = SyncTransport(http_client=_mock_client(handler), cache_ttl=60.0)
+    write = RequestSpec(method="PATCH", path="/ulist/v17", json={"vote": 90})
+    t.send(write)
+    t.send(write)
+    assert calls["n"] == 2  # writes always hit the network
+
+
+def test_async_cache_serves_repeated_read_once():
+    calls, handler = _counting_handler()
+
+    async def scenario():
+        t = AsyncTransport(http_client=_mock_async_client(handler), cache_ttl=60.0)
+        await t.send(SPEC)
+        await t.send(SPEC)
+
+    asyncio.run(scenario())
+    assert calls["n"] == 1

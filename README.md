@@ -14,7 +14,7 @@ A fully typed, HTTP-based Python client for the [VNDB](https://vndb.org) (Visual
 
 - Synchronous (`Client`) and asynchronous (`AsyncClient`) interfaces sharing one core.
 - Typed Pydantic models for every entity: visual novels, releases, producers, characters, staff, tags, traits, quotes.
-- A composable filter DSL — `(vn_filters.rating >= 80) & (vn_filters.lang == "en")`.
+- A composable filter DSL (`from vndb_client.filters import vn_filters`) — `(vn_filters.rating >= 80) & (vn_filters.lang == "en")`.
 - Simple GET endpoints: `stats`, `authinfo`, `get_user`, `ulist_labels`, `schema`.
 - User-list read and write: query a user's list, then `set_ulist` / `delete_ulist` / `set_rlist` / `delete_rlist`.
 - Ships `py.typed`; strict mypy-clean.

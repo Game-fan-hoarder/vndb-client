@@ -1,13 +1,15 @@
 from __future__ import annotations
 
+import abc
 from typing import Any
 
 
-class Predicate:
+class Predicate(abc.ABC):
     """Base class for filter predicates that serialize to VNDB's filter DSL."""
 
+    @abc.abstractmethod
     def to_filter(self) -> list[Any]:
-        raise NotImplementedError
+        """Serialize this predicate to VNDB's nested-list filter form."""
 
     def __and__(self, other: Predicate) -> Compound:
         return Compound._combine("and", self, other)
@@ -61,10 +63,21 @@ class Field:
 
     Because ``&``/``|`` bind looser than comparison operators in Python, wrap each
     comparison in parentheses when composing: ``(f.rating >= 80) & (f.lang == "en")``.
+
+    Instances are immutable: namespace fields (e.g. ``vn_filters.rating``) are shared
+    singletons, so rebinding ``.name`` is blocked to avoid corrupting them globally.
     """
 
+    __slots__ = ("name",)
+
+    name: str
+
     def __init__(self, name: str) -> None:
-        self.name = name
+        object.__setattr__(self, "name", name)
+
+    def __setattr__(self, key: str, value: Any) -> None:
+        msg = "Field is immutable"
+        raise AttributeError(msg)
 
     def __eq__(self, other: Any) -> Comparison:  # type: ignore[override]
         return Comparison(self.name, "=", other)

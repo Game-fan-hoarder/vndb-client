@@ -7,6 +7,11 @@ edit_uri: edit/main/docs/
 repo_name: HOZHENWAI/vndb-client
 copyright: Maintained by <a href="https://HOZHENWAI.com">HOZHENWAI</a>.
 
+# Keep internal design docs / feature maps / plans out of the published site.
+exclude_docs: |
+  2026-*.md
+  superpowers/
+
 nav:
   - Home: index.md
   - Guides:

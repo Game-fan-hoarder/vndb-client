@@ -48,13 +48,14 @@ retry on 400, 401, 404, or Pydantic validation errors.
 
 ### Requirement: Backoff timing
 
-On a retryable 429 the client SHALL honor a `Retry-After` response header when
-present; otherwise it SHALL apply exponential backoff with a cap. The sleep
-mechanism SHALL be patchable so tests do not wait in real time.
+On any retryable response the client SHALL honor a `Retry-After` response header
+when present (not only on 429); otherwise it SHALL apply exponential backoff with
+a cap. The sleep mechanism SHALL be patchable so tests do not wait in real time.
 
 #### Scenario: Honor Retry-After
 
-- **WHEN** a 429 response includes a `Retry-After` header and a retry will occur
+- **WHEN** a retryable response (e.g. 429 or a transient 502/503) includes a
+  `Retry-After` header and a retry will occur
 - **THEN** the client waits for the indicated duration before retrying
 
 #### Scenario: Exponential backoff without Retry-After

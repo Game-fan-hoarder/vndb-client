@@ -92,6 +92,12 @@ def test_retry_on_transient_5xx_and_network():
     assert _policy().next(attempt=1, status=None, exc=httpx.ConnectError("x"))[0] is True
 
 
+def test_retry_honors_retry_after_on_transient_5xx():
+    retry, delay = _policy().next(attempt=1, status=503, exc=None, retry_after=9.0)
+    assert retry is True
+    assert delay == pytest.approx(9.0)  # Retry-After honored for 5xx, not just 429
+
+
 def test_no_retry_on_non_retryable_statuses():
     for status in (400, 401, 404, 500):
         assert _policy().next(attempt=1, status=status, exc=None)[0] is False
@@ -122,3 +128,15 @@ def test_parse_page_returns_typed_page():
 def test_parse_page_wraps_validation_error():
     with pytest.raises(VndbParseError):
         core.parse_page({"results": [{"wrong": "shape"}], "more": False}, _Dummy)
+
+
+# --- decode_json ---
+
+
+def test_decode_json_returns_payload():
+    assert core.decode_json(httpx.Response(200, json={"a": 1})) == {"a": 1}
+
+
+def test_decode_json_wraps_value_error():
+    with pytest.raises(VndbParseError):
+        core.decode_json(httpx.Response(200, text="not json"))

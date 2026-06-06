@@ -73,3 +73,33 @@ def test_user_list_exports_present():
     for name in ("UlistEntry", "UlistEntryLabel", "UlistVN", "RListStatus", "UNSET", "UnsetType"):
         assert hasattr(vndb_client, name), name
         assert name in vndb_client.__all__
+
+
+def test_entity_submodels_exported():
+    import vndb_client
+
+    for name in (
+        "ProducerType",
+        "QuoteVN",
+        "QuoteCharacter",
+        "ReleaseLang",
+        "ReleaseMedia",
+        "StaffAlias",
+        "TagCategory",
+    ):
+        assert hasattr(vndb_client, name), name
+        assert name in vndb_client.__all__
+
+
+def test_all_is_consistent_and_sorted():
+    import vndb_client
+
+    names = vndb_client.__all__
+    # No duplicates, and every listed name actually resolves on the package.
+    assert len(names) == len(set(names))
+    for name in names:
+        assert hasattr(vndb_client, name), name
+    # Matches ruff RUF022 ordering: all-uppercase constants first, then the rest.
+    consts = sorted(n for n in names if n.isupper())
+    others = sorted(n for n in names if not n.isupper())
+    assert list(names) == consts + others

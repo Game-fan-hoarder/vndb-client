@@ -80,6 +80,14 @@ def raise_for_status(status: int, body: str) -> None:
     raise exc_type(status_code=status, message=body.strip())
 
 
+def decode_json(response: Any) -> Any:
+    """Decode a response body as JSON, raising :class:`VndbParseError` on malformed bodies."""
+    try:
+        return response.json()
+    except ValueError as exc:
+        raise VndbParseError(str(exc)) from exc
+
+
 def parse_page(raw: dict[str, Any], model: type[ModelT]) -> Page[ModelT]:
     """Parse a raw response envelope into a typed ``Page[model]``."""
     page_type = Page[model]  # type: ignore[valid-type]
@@ -112,7 +120,7 @@ class RetryPolicy:
         retryable = exc is not None or (status is not None and status in self.config.retry_statuses)
         if not retryable:
             return (False, 0.0)
-        if status == 429 and retry_after is not None:
+        if retry_after is not None:
             delay = retry_after
         else:
             delay = min(self.config.backoff_base * (2 ** (attempt - 1)), self.config.backoff_cap)

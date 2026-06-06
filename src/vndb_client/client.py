@@ -23,7 +23,6 @@ from vndb_client.entities.tag import Tag
 from vndb_client.entities.trait import Trait
 from vndb_client.entities.ulist import UNSET, UlistEntry, UnsetType
 from vndb_client.entities.vn import VN
-from vndb_client.exceptions import VndbParseError
 from vndb_client.meta import (
     AuthInfo,
     Stats,
@@ -73,34 +72,60 @@ class Client:
     def _query(self, endpoint: str, model: type[ModelT], **params: Any) -> Page[ModelT]:
         spec = core.build_query_request(endpoint, **params)
         response = self._transport.send(spec)
-        try:
-            raw = response.json()
-        except ValueError as exc:
-            raise VndbParseError(str(exc)) from exc
-        return core.parse_page(raw, model)
+        return core.parse_page(core.decode_json(response), model)
 
     def _get(self, path: str, *, params: dict[str, Any] | None = None) -> Any:
         clean = {key: value for key, value in (params or {}).items() if value is not None}
         spec = core.RequestSpec(method="GET", path=f"/{path.lstrip('/')}", params=clean or None)
         response = self._transport.send(spec)
-        try:
-            return response.json()
-        except ValueError as exc:
-            raise VndbParseError(str(exc)) from exc
+        return core.decode_json(response)
 
     def stats(self) -> Stats:
+        """Return database-wide totals from the ``/stats`` endpoint.
+
+        Returns:
+            The site-wide entity counts.
+        """
         return parse_one(Stats, self._get("stats"))
 
     def authinfo(self) -> AuthInfo:
+        """Return identity and permissions for the current token (``/authinfo``).
+
+        Returns:
+            The authenticated token's id, username, and granted permissions.
+        """
         return parse_one(AuthInfo, self._get("authinfo"))
 
     def get_user(self, q: str | list[str], *, fields: str | None = None) -> dict[str, User | None]:
+        """Look up users by id or name via the ``/user`` endpoint.
+
+        Args:
+            q: A single user id/name, or a list of them.
+            fields: Optional comma-separated extra fields to request.
+
+        Returns:
+            A mapping from each query term to its ``User``, or ``None`` if unknown.
+        """
         return parse_user_map(self._get("user", params={"q": q, "fields": fields}))
 
     def ulist_labels(self, user: str | None = None, *, fields: str | None = None) -> list[UlistLabel]:
+        """List the ulist labels for a user (``/ulist_labels``).
+
+        Args:
+            user: The user id whose labels to fetch; defaults to the token's user.
+            fields: Optional comma-separated extra fields to request.
+
+        Returns:
+            The user's labels.
+        """
         return parse_labels(self._get("ulist_labels", params={"user": user, "fields": fields}))
 
     def schema(self) -> dict[str, Any]:
+        """Return the raw VNDB API schema document (``/schema``).
+
+        Returns:
+            The schema as a plain JSON-decoded dict.
+        """
         return cast("dict[str, Any]", self._get("schema"))
 
     def _write(self, method: str, path: str, *, json: dict[str, Any] | None = None) -> None:
@@ -119,6 +144,21 @@ class Client:
         labels_set: list[int] | None = None,
         labels_unset: list[int] | None = None,
     ) -> None:
+        """Create or update the authenticated user's ulist entry for a VN.
+
+        Each scalar argument defaults to ``UNSET`` (the field is omitted from the
+        request); pass ``None`` to clear it, or a value to set it.
+
+        Args:
+            vn_id: The VN id (e.g. ``"v17"``).
+            vote: Vote in 10-100, ``None`` to clear, or ``UNSET`` to leave as-is.
+            notes: Free-text notes, ``None`` to clear, or ``UNSET`` to leave as-is.
+            started: Start date ``YYYY-MM-DD``, ``None`` to clear, or ``UNSET``.
+            finished: Finish date ``YYYY-MM-DD``, ``None`` to clear, or ``UNSET``.
+            labels: Replace the entry's labels with this exact list of label ids.
+            labels_set: Label ids to add.
+            labels_unset: Label ids to remove.
+        """
         body: dict[str, Any] = {}
         if vote is not UNSET:
             body["vote"] = vote
@@ -137,12 +177,20 @@ class Client:
         self._write("PATCH", f"ulist/{vn_id}", json=body)
 
     def delete_ulist(self, vn_id: str) -> None:
+        """Remove the authenticated user's ulist entry for ``vn_id``."""
         self._write("DELETE", f"ulist/{vn_id}")
 
     def set_rlist(self, release_id: str, *, status: int) -> None:
+        """Set the authenticated user's rlist status for a release.
+
+        Args:
+            release_id: The release id (e.g. ``"r123"``).
+            status: The rlist status; accepts an ``int`` or an ``RListStatus`` value.
+        """
         self._write("PATCH", f"rlist/{release_id}", json={"status": status})
 
     def delete_rlist(self, release_id: str) -> None:
+        """Remove the authenticated user's rlist entry for ``release_id``."""
         self._write("DELETE", f"rlist/{release_id}")
 
     def close(self) -> None:
@@ -194,34 +242,60 @@ class AsyncClient:
     async def _query(self, endpoint: str, model: type[ModelT], **params: Any) -> Page[ModelT]:
         spec = core.build_query_request(endpoint, **params)
         response = await self._transport.send(spec)
-        try:
-            raw = response.json()
-        except ValueError as exc:
-            raise VndbParseError(str(exc)) from exc
-        return core.parse_page(raw, model)
+        return core.parse_page(core.decode_json(response), model)
 
     async def _get(self, path: str, *, params: dict[str, Any] | None = None) -> Any:
         clean = {key: value for key, value in (params or {}).items() if value is not None}
         spec = core.RequestSpec(method="GET", path=f"/{path.lstrip('/')}", params=clean or None)
         response = await self._transport.send(spec)
-        try:
-            return response.json()
-        except ValueError as exc:
-            raise VndbParseError(str(exc)) from exc
+        return core.decode_json(response)
 
     async def stats(self) -> Stats:
+        """Return database-wide totals from the ``/stats`` endpoint.
+
+        Returns:
+            The site-wide entity counts.
+        """
         return parse_one(Stats, await self._get("stats"))
 
     async def authinfo(self) -> AuthInfo:
+        """Return identity and permissions for the current token (``/authinfo``).
+
+        Returns:
+            The authenticated token's id, username, and granted permissions.
+        """
         return parse_one(AuthInfo, await self._get("authinfo"))
 
     async def get_user(self, q: str | list[str], *, fields: str | None = None) -> dict[str, User | None]:
+        """Look up users by id or name via the ``/user`` endpoint.
+
+        Args:
+            q: A single user id/name, or a list of them.
+            fields: Optional comma-separated extra fields to request.
+
+        Returns:
+            A mapping from each query term to its ``User``, or ``None`` if unknown.
+        """
         return parse_user_map(await self._get("user", params={"q": q, "fields": fields}))
 
     async def ulist_labels(self, user: str | None = None, *, fields: str | None = None) -> list[UlistLabel]:
+        """List the ulist labels for a user (``/ulist_labels``).
+
+        Args:
+            user: The user id whose labels to fetch; defaults to the token's user.
+            fields: Optional comma-separated extra fields to request.
+
+        Returns:
+            The user's labels.
+        """
         return parse_labels(await self._get("ulist_labels", params={"user": user, "fields": fields}))
 
     async def schema(self) -> dict[str, Any]:
+        """Return the raw VNDB API schema document (``/schema``).
+
+        Returns:
+            The schema as a plain JSON-decoded dict.
+        """
         return cast("dict[str, Any]", await self._get("schema"))
 
     async def _write(self, method: str, path: str, *, json: dict[str, Any] | None = None) -> None:
@@ -240,6 +314,21 @@ class AsyncClient:
         labels_set: list[int] | None = None,
         labels_unset: list[int] | None = None,
     ) -> None:
+        """Create or update the authenticated user's ulist entry for a VN.
+
+        Each scalar argument defaults to ``UNSET`` (the field is omitted from the
+        request); pass ``None`` to clear it, or a value to set it.
+
+        Args:
+            vn_id: The VN id (e.g. ``"v17"``).
+            vote: Vote in 10-100, ``None`` to clear, or ``UNSET`` to leave as-is.
+            notes: Free-text notes, ``None`` to clear, or ``UNSET`` to leave as-is.
+            started: Start date ``YYYY-MM-DD``, ``None`` to clear, or ``UNSET``.
+            finished: Finish date ``YYYY-MM-DD``, ``None`` to clear, or ``UNSET``.
+            labels: Replace the entry's labels with this exact list of label ids.
+            labels_set: Label ids to add.
+            labels_unset: Label ids to remove.
+        """
         body: dict[str, Any] = {}
         if vote is not UNSET:
             body["vote"] = vote
@@ -258,12 +347,20 @@ class AsyncClient:
         await self._write("PATCH", f"ulist/{vn_id}", json=body)
 
     async def delete_ulist(self, vn_id: str) -> None:
+        """Remove the authenticated user's ulist entry for ``vn_id``."""
         await self._write("DELETE", f"ulist/{vn_id}")
 
     async def set_rlist(self, release_id: str, *, status: int) -> None:
+        """Set the authenticated user's rlist status for a release.
+
+        Args:
+            release_id: The release id (e.g. ``"r123"``).
+            status: The rlist status; accepts an ``int`` or an ``RListStatus`` value.
+        """
         await self._write("PATCH", f"rlist/{release_id}", json={"status": status})
 
     async def delete_rlist(self, release_id: str) -> None:
+        """Remove the authenticated user's rlist entry for ``release_id``."""
         await self._write("DELETE", f"rlist/{release_id}")
 
     async def aclose(self) -> None:

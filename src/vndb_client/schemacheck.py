@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import dataclass, field
 from typing import Any
 
 from vndb_client.entities.character import Character
@@ -47,3 +48,61 @@ def parse_schema_field_names(raw_schema: dict[str, Any]) -> dict[str, set[str]]:
         else:
             result[type_name] = set()
     return result
+
+
+@dataclass(frozen=True)
+class TypeDrift:
+    """Per-type field-name drift between a model and ``/schema``."""
+
+    missing_in_schema: set[str]  # model declares it, /schema does not -> actionable
+    missing_in_model: set[str]  # /schema lists it, model does not -> informational
+
+
+@dataclass
+class SchemaDriftReport:
+    """Drift between the registered models and a ``/schema`` document."""
+
+    drifts: dict[str, TypeDrift] = field(default_factory=dict)
+
+    @property
+    def has_actionable_drift(self) -> bool:
+        """True if any type has model fields the live ``/schema`` no longer lists."""
+        return any(drift.missing_in_schema for drift in self.drifts.values())
+
+    def __str__(self) -> str:
+        lines: list[str] = []
+        for type_name, drift in sorted(self.drifts.items()):
+            if not drift.missing_in_schema and not drift.missing_in_model:
+                continue
+            lines.append(f"{type_name}:")
+            if drift.missing_in_schema:
+                lines.append(f"  ! not in /schema (actionable): {sorted(drift.missing_in_schema)}")
+            if drift.missing_in_model:
+                lines.append(f"  + not modelled (info): {sorted(drift.missing_in_model)}")
+        if not lines:
+            return "No schema drift."
+        verdict = "ACTIONABLE DRIFT" if self.has_actionable_drift else "informational drift only"
+        return "\n".join([*lines, f"-> {verdict}"])
+
+
+def diff_schema(
+    raw_schema: dict[str, Any],
+    models: dict[str, type[VndbModel]] | None = None,
+) -> SchemaDriftReport:
+    """Compare model field names against a ``/schema`` document.
+
+    For each registered type, computes the field names the model declares but
+    ``/schema`` omits (actionable) and the names ``/schema`` lists but the model
+    omits (informational). Pure: performs no I/O.
+    """
+    models = ENTITY_MODELS if models is None else models
+    schema_fields = parse_schema_field_names(raw_schema)
+    report = SchemaDriftReport()
+    for type_name, model in models.items():
+        model_names = model_field_names(model)
+        api_names = schema_fields.get(type_name, set())
+        report.drifts[type_name] = TypeDrift(
+            missing_in_schema=model_names - api_names,
+            missing_in_model=api_names - model_names,
+        )
+    return report

@@ -58,6 +58,23 @@ def test_query_explicit_fields_override():
     assert captured["body"]["fields"] == "id,title"
 
 
+def test_query_forwards_sort_and_reverse():
+    captured, handler = _capture()
+    with Client(http_client=_client(handler)) as client:
+        client.vn.query(sort="rating", reverse=True)
+    assert captured["body"]["sort"] == "rating"
+    assert captured["body"]["reverse"] is True
+
+
+def test_query_omits_unset_optional_params():
+    captured, handler = _capture()
+    with Client(http_client=_client(handler)) as client:
+        client.vn.query()
+    body = captured["body"]
+    for absent in ("sort", "reverse", "results", "page", "count", "filters"):
+        assert absent not in body
+
+
 def test_async_vn_attr_and_query():
     captured, handler = _capture()
 

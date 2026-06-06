@@ -75,3 +75,19 @@ def test_diff_schema_report_str_lists_drifting_types():
     text = str(diff_schema(raw, models={"vn": _FakeVN}))
     assert "vn" in text
     assert "title" in text
+
+
+def test_parse_schema_field_names_non_dict_api_fields_is_empty():
+    assert parse_schema_field_names({"api_fields": None}) == {}
+    assert parse_schema_field_names({"api_fields": []}) == {}
+
+
+def test_entity_models_matches_client_queryable_resources():
+    from vndb_client.client import Client
+    from vndb_client.resource import QueryResource
+
+    with Client() as client:
+        endpoints = {r._endpoint for r in vars(client).values() if isinstance(r, QueryResource)}
+    # ulist is intentionally excluded from drift coverage (user-scoped, not a
+    # /schema api_fields type); every other queryable resource must be registered.
+    assert set(ENTITY_MODELS) == endpoints - {"ulist"}

@@ -13,6 +13,10 @@ from vndb_client.entities.trait import Trait
 from vndb_client.entities.vn import VN
 from vndb_client.models import VndbModel
 
+# Maps each queryable VNDB type to its model. Must stay in sync with the
+# QueryResource attributes on Client (guarded by a test). ``ulist`` is
+# intentionally omitted: it is a user-scoped resource, not a /schema api_fields
+# type.
 ENTITY_MODELS: dict[str, type[VndbModel]] = {
     "vn": VN,
     "release": Release,
@@ -40,6 +44,10 @@ def parse_schema_field_names(raw_schema: dict[str, Any]) -> dict[str, set[str]]:
     """
     api_fields = raw_schema.get("api_fields", {})
     result: dict[str, set[str]] = {}
+    if not isinstance(api_fields, dict):
+        # Unexpected /schema shape: surface as "no fields known" so every model
+        # field reads as actionable drift (fail loud) rather than crashing here.
+        return result
     for type_name, fields_def in api_fields.items():
         if isinstance(fields_def, dict):
             result[type_name] = {key for key in fields_def if not key.startswith("_")}
@@ -112,13 +120,19 @@ def main() -> int:
     """Fetch the live ``/schema``, report drift, and return an exit code.
 
     Returns ``1`` if there is actionable drift (model fields the API no longer
-    lists), else ``0``. Imports ``Client`` lazily so the pure module stays
-    import-light and I/O-free.
+    lists), ``0`` if in sync, and ``2`` if the live ``/schema`` could not be
+    fetched (so CI can tell a transport failure apart from real drift). Imports
+    ``Client`` lazily so the pure module stays import-light and I/O-free.
     """
     from vndb_client.client import Client
+    from vndb_client.exceptions import VndbError
 
-    with Client() as client:
-        raw_schema = client.schema()
+    try:
+        with Client() as client:
+            raw_schema = client.schema()
+    except VndbError as exc:
+        print(f"could not fetch /schema: {exc}")
+        return 2
     report = diff_schema(raw_schema)
     print(report)
     return 1 if report.has_actionable_drift else 0

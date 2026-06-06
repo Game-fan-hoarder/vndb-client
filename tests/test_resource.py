@@ -1,0 +1,88 @@
+from __future__ import annotations
+
+import asyncio
+import json
+
+import httpx
+
+from vndb_client.client import AsyncClient, Client
+from vndb_client.config import PROD_BASE_URL
+from vndb_client.entities.vn import VN
+from vndb_client.fields import field_spec
+from vndb_client.models import Page
+from vndb_client.resource import AsyncQueryResource, QueryResource
+
+VN_RESPONSE = {"results": [{"id": "v17", "title": "Ever17"}], "more": False, "count": 1}
+
+
+def _capture():
+    captured: dict = {}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        captured["body"] = json.loads(request.content)
+        return httpx.Response(200, json=VN_RESPONSE)
+
+    return captured, handler
+
+
+def _client(handler):
+    return httpx.Client(transport=httpx.MockTransport(handler), base_url=PROD_BASE_URL)
+
+
+def _aclient(handler):
+    return httpx.AsyncClient(transport=httpx.MockTransport(handler), base_url=PROD_BASE_URL)
+
+
+def test_vn_attr_is_query_resource():
+    client = Client(http_client=_client(lambda r: httpx.Response(200, json=VN_RESPONSE)))
+    assert isinstance(client.vn, QueryResource)
+
+
+def test_query_defaults_fields_and_forwards_params():
+    captured, handler = _capture()
+    with Client(http_client=_client(handler)) as client:
+        page = client.vn.query(filters=["search", "=", "ever"], results=5, count=True)
+    assert captured["body"]["fields"] == field_spec(VN)
+    assert captured["body"]["filters"] == ["search", "=", "ever"]
+    assert captured["body"]["results"] == 5
+    assert captured["body"]["count"] is True
+    assert isinstance(page, Page)
+    assert isinstance(page.results[0], VN)
+    assert page.results[0].id == "v17"
+
+
+def test_query_explicit_fields_override():
+    captured, handler = _capture()
+    with Client(http_client=_client(handler)) as client:
+        client.vn.query(fields="id,title")
+    assert captured["body"]["fields"] == "id,title"
+
+
+def test_query_forwards_sort_and_reverse():
+    captured, handler = _capture()
+    with Client(http_client=_client(handler)) as client:
+        client.vn.query(sort="rating", reverse=True)
+    assert captured["body"]["sort"] == "rating"
+    assert captured["body"]["reverse"] is True
+
+
+def test_query_omits_unset_optional_params():
+    captured, handler = _capture()
+    with Client(http_client=_client(handler)) as client:
+        client.vn.query()
+    body = captured["body"]
+    for absent in ("sort", "reverse", "results", "page", "count", "filters"):
+        assert absent not in body
+
+
+def test_async_vn_attr_and_query():
+    captured, handler = _capture()
+
+    async def scenario():
+        async with AsyncClient(http_client=_aclient(handler)) as client:
+            assert isinstance(client.vn, AsyncQueryResource)
+            return await client.vn.query(page=2)
+
+    page = asyncio.run(scenario())
+    assert isinstance(page.results[0], VN)
+    assert captured["body"]["page"] == 2

@@ -14,8 +14,10 @@ from vndb_client.config import (
     PROD_BASE_URL,
     RetryConfig,
 )
+from vndb_client.entities.vn import VN
 from vndb_client.exceptions import VndbParseError
 from vndb_client.models import Page
+from vndb_client.resource import AsyncQueryResource, QueryResource
 
 ModelT = TypeVar("ModelT", bound=BaseModel)
 
@@ -41,6 +43,7 @@ class Client:
             retry=retry,
             http_client=http_client,
         )
+        self.vn: QueryResource[VN] = QueryResource(self, "vn", VN)
 
     def _query(self, endpoint: str, model: type[ModelT], **params: Any) -> Page[ModelT]:
         spec = core.build_query_request(endpoint, **params)
@@ -87,6 +90,7 @@ class AsyncClient:
             retry=retry,
             http_client=http_client,
         )
+        self.vn: AsyncQueryResource[VN] = AsyncQueryResource(self, "vn", VN)
 
     async def _query(self, endpoint: str, model: type[ModelT], **params: Any) -> Page[ModelT]:
         spec = core.build_query_request(endpoint, **params)

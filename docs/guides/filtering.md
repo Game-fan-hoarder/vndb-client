@@ -46,3 +46,27 @@ from vndb_client.filters import field
 
 predicate = field("released") >= "2010-01-01"
 ```
+
+## Round-tripping compact and normalized filters
+
+VNDB can echo your filters back in two forms — a compact, opaque string and the
+explicit normalized list. Ask for them with the request flags, then reuse either
+form as `filters` in a later query (the compact string cannot be decoded locally;
+the conversion is done by the API):
+
+```python
+from vndb_client import Client
+from vndb_client.filters import vn_filters
+
+with Client() as client:
+    page = client.vn.query(
+        filters=(vn_filters.rating >= 80),
+        compact_filters=True,
+        normalized_filters=True,
+    )
+    print(page.compact_filters)     # opaque string
+    print(page.normalized_filters)  # explicit nested list
+
+    # Feed either form straight back into another query:
+    more = client.vn.query(filters=page.compact_filters, results=25)
+```

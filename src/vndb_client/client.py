@@ -21,6 +21,7 @@ from vndb_client.entities.release import Release
 from vndb_client.entities.staff import Staff
 from vndb_client.entities.tag import Tag
 from vndb_client.entities.trait import Trait
+from vndb_client.entities.ulist import UlistEntry
 from vndb_client.entities.vn import VN
 from vndb_client.exceptions import VndbParseError
 from vndb_client.meta import (
@@ -67,6 +68,7 @@ class Client:
         self.tag: QueryResource[Tag] = QueryResource(self, "tag", Tag)
         self.trait: QueryResource[Trait] = QueryResource(self, "trait", Trait)
         self.quote: QueryResource[Quote] = QueryResource(self, "quote", Quote)
+        self.ulist: QueryResource[UlistEntry] = QueryResource(self, "ulist", UlistEntry)
 
     def _query(self, endpoint: str, model: type[ModelT], **params: Any) -> Page[ModelT]:
         spec = core.build_query_request(endpoint, **params)
@@ -145,6 +147,7 @@ class AsyncClient:
         self.tag: AsyncQueryResource[Tag] = AsyncQueryResource(self, "tag", Tag)
         self.trait: AsyncQueryResource[Trait] = AsyncQueryResource(self, "trait", Trait)
         self.quote: AsyncQueryResource[Quote] = AsyncQueryResource(self, "quote", Quote)
+        self.ulist: AsyncQueryResource[UlistEntry] = AsyncQueryResource(self, "ulist", UlistEntry)
 
     async def _query(self, endpoint: str, model: type[ModelT], **params: Any) -> Page[ModelT]:
         spec = core.build_query_request(endpoint, **params)

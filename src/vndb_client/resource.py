@@ -30,6 +30,7 @@ class QueryResource(Generic[ModelT]):
         results: int | None = None,
         page: int | None = None,
         count: bool | None = None,
+        user: str | None = None,
     ) -> Page[ModelT]:
         return self._client._query(
             self._endpoint,
@@ -41,6 +42,7 @@ class QueryResource(Generic[ModelT]):
             results=results,
             page=page,
             count=count,
+            user=user,
         )
 
 
@@ -62,6 +64,7 @@ class AsyncQueryResource(Generic[ModelT]):
         results: int | None = None,
         page: int | None = None,
         count: bool | None = None,
+        user: str | None = None,
     ) -> Page[ModelT]:
         return await self._client._query(
             self._endpoint,
@@ -73,4 +76,5 @@ class AsyncQueryResource(Generic[ModelT]):
             results=results,
             page=page,
             count=count,
+            user=user,
         )

@@ -157,3 +157,17 @@ def test_async_query_serializes_predicate():
 
     asyncio.run(scenario())
     assert captured["body"]["filters"] == ["rating", ">", 50]
+
+
+def test_query_forwards_user_param():
+    captured, handler = _capture()
+    with Client(http_client=_client(handler)) as client:
+        client.vn.query(user="u2")
+    assert captured["body"]["user"] == "u2"
+
+
+def test_query_omits_user_when_absent():
+    captured, handler = _capture()
+    with Client(http_client=_client(handler)) as client:
+        client.vn.query()
+    assert "user" not in captured["body"]

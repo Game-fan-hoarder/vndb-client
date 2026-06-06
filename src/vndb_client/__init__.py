@@ -10,6 +10,7 @@ from vndb_client.entities.release import Release
 from vndb_client.entities.staff import Staff
 from vndb_client.entities.tag import Tag
 from vndb_client.entities.trait import Trait
+from vndb_client.entities.ulist import UNSET, RListStatus, UlistEntry, UlistEntryLabel, UlistVN
 from vndb_client.entities.vn import VN, DevStatus, Title, VNLength
 from vndb_client.exceptions import (
     VndbAPIError,
@@ -26,6 +27,7 @@ from vndb_client.meta import AuthInfo, Stats, UlistLabel, User
 from vndb_client.models import Page, VndbModel
 
 __all__ = [
+    "UNSET",
     "VN",
     "AsyncClient",
     "AuthInfo",
@@ -37,6 +39,7 @@ __all__ = [
     "Page",
     "Producer",
     "Quote",
+    "RListStatus",
     "Release",
     "RetryConfig",
     "Staff",
@@ -44,7 +47,10 @@ __all__ = [
     "Tag",
     "Title",
     "Trait",
+    "UlistEntry",
+    "UlistEntryLabel",
     "UlistLabel",
+    "UlistVN",
     "User",
     "VNLength",
     "VndbAPIError",

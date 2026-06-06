@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Generic, TypeVar
 
 from vndb_client.fields import field_spec
+from vndb_client.filters.predicate import Predicate, resolve_filters
 from vndb_client.models import Page, VndbModel
 
 if TYPE_CHECKING:
@@ -22,7 +23,7 @@ class QueryResource(Generic[ModelT]):
     def query(
         self,
         *,
-        filters: Any = None,
+        filters: Predicate | list[Any] | None = None,
         fields: str | None = None,
         sort: str | None = None,
         reverse: bool | None = None,
@@ -33,7 +34,7 @@ class QueryResource(Generic[ModelT]):
         return self._client._query(
             self._endpoint,
             self._model,
-            filters=filters,
+            filters=resolve_filters(filters),
             fields=fields if fields is not None else field_spec(self._model),
             sort=sort,
             reverse=reverse,
@@ -54,7 +55,7 @@ class AsyncQueryResource(Generic[ModelT]):
     async def query(
         self,
         *,
-        filters: Any = None,
+        filters: Predicate | list[Any] | None = None,
         fields: str | None = None,
         sort: str | None = None,
         reverse: bool | None = None,
@@ -65,7 +66,7 @@ class AsyncQueryResource(Generic[ModelT]):
         return await self._client._query(
             self._endpoint,
             self._model,
-            filters=filters,
+            filters=resolve_filters(filters),
             fields=fields if fields is not None else field_spec(self._model),
             sort=sort,
             reverse=reverse,

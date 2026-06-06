@@ -106,3 +106,23 @@ def diff_schema(
             missing_in_model=api_names - model_names,
         )
     return report
+
+
+def main() -> int:
+    """Fetch the live ``/schema``, report drift, and return an exit code.
+
+    Returns ``1`` if there is actionable drift (model fields the API no longer
+    lists), else ``0``. Imports ``Client`` lazily so the pure module stays
+    import-light and I/O-free.
+    """
+    from vndb_client.client import Client
+
+    with Client() as client:
+        raw_schema = client.schema()
+    report = diff_schema(raw_schema)
+    print(report)
+    return 1 if report.has_actionable_drift else 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

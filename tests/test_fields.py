@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import pytest
 from pydantic import Field
 
 from vndb_client.fields import field_spec
@@ -11,12 +12,21 @@ class _Sub(VndbModel):
     b: int | None = None
 
 
+class _Empty(VndbModel):
+    pass
+
+
 class _M(VndbModel):
     id: str
     dev_status: int | None = Field(default=None, alias="devstatus")
     tags: list[str] | None = None
     sub: _Sub | None = None
     subs: list[_Sub] | None = None
+
+
+def test_empty_model_raises():
+    with pytest.raises(ValueError, match="no fields"):
+        field_spec(_Empty)
 
 
 def test_flat_fields_use_alias_or_name():

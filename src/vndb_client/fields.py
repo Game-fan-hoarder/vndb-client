@@ -23,13 +23,20 @@ def field_spec(model: type[VndbModel]) -> str:
 
     Uses each field's alias (or name), and recurses into nested ``VndbModel``
     sub-models with dotted paths. List-of-scalar fields stay bare.
+
+    Raises:
+        ValueError: if ``model`` declares no fields (would produce an empty,
+            API-rejected ``fields`` string).
     """
     parts: list[str] = []
     for name, info in model.model_fields.items():
         key = info.alias or name
         inner = _core_type(info.annotation)
         if isinstance(inner, type) and issubclass(inner, VndbModel):
-            parts.extend(f"{key}.{nested}" for nested in field_spec(inner).split(","))
+            parts.extend(f"{key}.{nested}" for nested in field_spec(inner).split(",") if nested)
         else:
             parts.append(key)
+    if not parts:
+        msg = f"{model.__name__} declares no fields to request"
+        raise ValueError(msg)
     return ",".join(parts)

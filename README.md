@@ -72,4 +72,4 @@ Full guides and the API reference live at
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT — see [LICENSE](https://github.com/HOZHENWAI/vndb-client/blob/main/LICENSE).

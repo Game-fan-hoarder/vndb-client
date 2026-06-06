@@ -14,14 +14,17 @@ stable public release.
 
 ### Requirement: License metadata
 
-The packaging metadata SHALL declare the MIT license via a `[project].license`
-field and the `License :: OSI Approved :: MIT License` classifier, consistent
-with the repository `LICENSE` file.
+The packaging metadata SHALL declare the MIT license via the PEP 639
+`[project].license` SPDX expression (`"MIT"`) and `license-files`, consistent
+with the repository `LICENSE` file. It SHALL NOT additionally carry a
+`License :: OSI Approved ::` trove classifier, which PEP 639 forbids alongside a
+license expression (Metadata-Version 2.4) and which modern build/upload tooling
+rejects.
 
 #### Scenario: License is discoverable from metadata
 - **WHEN** the built distribution metadata is read
-- **THEN** it declares the MIT license through both the license field and the
-  classifier
+- **THEN** it declares the MIT license through the SPDX license expression with
+  no conflicting `License ::` classifier present
 
 ### Requirement: Discoverability metadata
 
@@ -47,7 +50,8 @@ recognise the package as typed.
 ### Requirement: Coverage floor
 
 The test configuration SHALL enforce a minimum coverage threshold of 90% via
-`--cov-fail-under=90`, failing the test run if coverage drops below it.
+`fail_under = 90` in `[tool.coverage.report]` (read through
+`--cov-config=pyproject.toml`), failing the test run if coverage drops below it.
 
 #### Scenario: Coverage regression fails the build
 - **WHEN** `make test` runs and total coverage is below 90%

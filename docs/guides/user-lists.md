@@ -10,7 +10,7 @@ writes require a token with the appropriate permission (see
 from vndb_client import Client
 
 with Client(token="your-token") as client:
-    page = client.ulist.query(user="u2", fields="id,vote,vn.title")
+    page = client.ulist.query(user="u2", fields="id,vote,vn.id,vn.title")
     for entry in page.results:
         print(entry.id, entry.vote)
 ```

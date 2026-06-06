@@ -70,7 +70,7 @@ jobs:
         uses: ./.github/actions/setup-python-env
 
       - name: Build documentation
-        run: uv run mkdocs build --clean
+        run: uv run mkdocs build --clean --strict
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v4

@@ -22,3 +22,11 @@ def test_public_exports_present():
     ):
         assert hasattr(vndb_client, name), name
         assert name in vndb_client.__all__
+
+
+def test_vn_entity_exports_present():
+    import vndb_client
+
+    for name in ("VN", "Title", "Image", "DevStatus", "VNLength"):
+        assert hasattr(vndb_client, name), name
+        assert name in vndb_client.__all__

@@ -20,6 +20,11 @@ test: ## Test the code with pytest
 	@echo "🚀 Testing code: Running pytest"
 	@uv run python -m pytest --cov --cov-config=pyproject.toml --cov-report=xml
 
+.PHONY: schema-check
+schema-check: ## Check entity models against the live VNDB /schema (network)
+	@echo "🚀 Checking schema drift against live /schema"
+	@uv run python -m vndb_client.schemacheck
+
 .PHONY: build
 build: clean-build ## Build wheel file
 	@echo "🚀 Creating wheel file"

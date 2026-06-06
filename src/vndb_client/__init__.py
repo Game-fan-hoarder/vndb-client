@@ -22,11 +22,13 @@ from vndb_client.exceptions import (
     VndbRateLimitError,
     VndbServerError,
 )
+from vndb_client.meta import AuthInfo, Stats, UlistLabel, User
 from vndb_client.models import Page, VndbModel
 
 __all__ = [
     "VN",
     "AsyncClient",
+    "AuthInfo",
     "Character",
     "Client",
     "DevStatus",
@@ -38,9 +40,12 @@ __all__ = [
     "Release",
     "RetryConfig",
     "Staff",
+    "Stats",
     "Tag",
     "Title",
     "Trait",
+    "UlistLabel",
+    "User",
     "VNLength",
     "VndbAPIError",
     "VndbAuthError",

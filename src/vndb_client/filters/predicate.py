@@ -98,8 +98,9 @@ class Field:
         return Comparison(self.name, "<", other)
 
 
-def resolve_filters(filters: Predicate | list[Any] | None) -> list[Any] | None:
-    """Serialize a :class:`Predicate` to its list form; pass raw lists / ``None`` through."""
+def resolve_filters(filters: Predicate | list[Any] | str | None) -> list[Any] | str | None:
+    """Serialize a :class:`Predicate` to its list form; pass raw lists, compact
+    strings, and ``None`` through unchanged."""
     if isinstance(filters, Predicate):
         return filters.to_filter()
     return filters

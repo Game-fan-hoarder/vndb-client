@@ -207,3 +207,33 @@ def test_async_ulist_resource():
 
     page = asyncio.run(scenario())
     assert isinstance(page.results[0], UlistEntry)
+
+
+def test_query_forwards_filter_echo_flags_and_compact_string():
+    captured, handler = _capture()
+    with Client(http_client=_client(handler)) as client:
+        client.vn.query(filters="compact-xyz", compact_filters=True, normalized_filters=True)
+    assert captured["body"]["filters"] == "compact-xyz"
+    assert captured["body"]["compact_filters"] is True
+    assert captured["body"]["normalized_filters"] is True
+
+
+def test_query_omits_filter_echo_flags_when_unset():
+    captured, handler = _capture()
+    with Client(http_client=_client(handler)) as client:
+        client.vn.query()
+    assert "compact_filters" not in captured["body"]
+    assert "normalized_filters" not in captured["body"]
+
+
+def test_async_query_forwards_filter_echo_flags_and_compact_string():
+    captured, handler = _capture()
+
+    async def scenario():
+        async with AsyncClient(http_client=_aclient(handler)) as client:
+            await client.vn.query(filters="compact-async", normalized_filters=True)
+
+    asyncio.run(scenario())
+    assert captured["body"]["filters"] == "compact-async"
+    assert captured["body"]["normalized_filters"] is True
+    assert "compact_filters" not in captured["body"]

@@ -140,3 +140,15 @@ def test_decode_json_returns_payload():
 def test_decode_json_wraps_value_error():
     with pytest.raises(VndbParseError):
         core.decode_json(httpx.Response(200, text="not json"))
+
+
+def test_build_query_request_includes_filter_echo_flags_when_set():
+    spec = core.build_query_request("vn", compact_filters=True, normalized_filters=True)
+    assert spec.json["compact_filters"] is True
+    assert spec.json["normalized_filters"] is True
+
+
+def test_build_query_request_omits_filter_echo_flags_when_unset():
+    spec = core.build_query_request("vn", filters=["id", "=", "v1"])
+    assert "compact_filters" not in spec.json
+    assert "normalized_filters" not in spec.json

@@ -23,7 +23,7 @@ class QueryResource(Generic[ModelT]):
     def query(
         self,
         *,
-        filters: Predicate | list[Any] | None = None,
+        filters: Predicate | list[Any] | str | None = None,
         fields: str | None = None,
         sort: str | None = None,
         reverse: bool | None = None,
@@ -31,7 +31,27 @@ class QueryResource(Generic[ModelT]):
         page: int | None = None,
         count: bool | None = None,
         user: str | None = None,
+        compact_filters: bool | None = None,
+        normalized_filters: bool | None = None,
     ) -> Page[ModelT]:
+        """Query the endpoint and return a typed ``Page``.
+
+        Args:
+            filters: Filter predicate, raw list, or a compact filter string
+                returned from a previous ``Page`` (round-tripping).
+            fields: Comma-separated field list; defaults to ``field_spec`` for
+                the bound model.
+            sort: Field name to sort by.
+            reverse: Reverse the sort order when ``True``.
+            results: Maximum number of results to return.
+            page: Page number (1-based).
+            count: When ``True`` the API populates ``Page.count``.
+            user: User ID for endpoints that require one (e.g. ulist).
+            compact_filters: Request flag asking the API to echo the compact
+                filter string back in the returned ``Page``.
+            normalized_filters: Request flag asking the API to echo the
+                normalised filter list back in the returned ``Page``.
+        """
         return self._client._query(
             self._endpoint,
             self._model,
@@ -43,6 +63,8 @@ class QueryResource(Generic[ModelT]):
             page=page,
             count=count,
             user=user,
+            compact_filters=compact_filters,
+            normalized_filters=normalized_filters,
         )
 
 
@@ -57,7 +79,7 @@ class AsyncQueryResource(Generic[ModelT]):
     async def query(
         self,
         *,
-        filters: Predicate | list[Any] | None = None,
+        filters: Predicate | list[Any] | str | None = None,
         fields: str | None = None,
         sort: str | None = None,
         reverse: bool | None = None,
@@ -65,7 +87,27 @@ class AsyncQueryResource(Generic[ModelT]):
         page: int | None = None,
         count: bool | None = None,
         user: str | None = None,
+        compact_filters: bool | None = None,
+        normalized_filters: bool | None = None,
     ) -> Page[ModelT]:
+        """Query the endpoint and return a typed ``Page``.
+
+        Args:
+            filters: Filter predicate, raw list, or a compact filter string
+                returned from a previous ``Page`` (round-tripping).
+            fields: Comma-separated field list; defaults to ``field_spec`` for
+                the bound model.
+            sort: Field name to sort by.
+            reverse: Reverse the sort order when ``True``.
+            results: Maximum number of results to return.
+            page: Page number (1-based).
+            count: When ``True`` the API populates ``Page.count``.
+            user: User ID for endpoints that require one (e.g. ulist).
+            compact_filters: Request flag asking the API to echo the compact
+                filter string back in the returned ``Page``.
+            normalized_filters: Request flag asking the API to echo the
+                normalised filter list back in the returned ``Page``.
+        """
         return await self._client._query(
             self._endpoint,
             self._model,
@@ -77,4 +119,6 @@ class AsyncQueryResource(Generic[ModelT]):
             page=page,
             count=count,
             user=user,
+            compact_filters=compact_filters,
+            normalized_filters=normalized_filters,
         )

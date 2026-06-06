@@ -86,3 +86,7 @@ def test_resolve_filters():
 def test_predicate_base_is_abstract():
     assert issubclass(Comparison, Predicate)
     assert issubclass(Compound, Predicate)
+
+
+def test_resolve_filters_passes_compact_string_through():
+    assert resolve_filters("compact-opaque-string") == "compact-opaque-string"

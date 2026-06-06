@@ -60,6 +60,19 @@ with Client() as client:
 
 ::: vndb_client.meta
 
+## User lists
+
+```python
+from vndb_client import Client
+
+with Client(token="...") as client:           # listread/listwrite token
+    page = client.ulist.query(user="u2", fields="id,vote,vn.title")
+    client.set_ulist("v17", vote=90)            # rate / set notes / labels ...
+    client.delete_ulist("v17")
+```
+
+::: vndb_client.entities.ulist
+
 ::: vndb_client.config
 
 ::: vndb_client.exceptions

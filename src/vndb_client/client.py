@@ -21,6 +21,7 @@ from vndb_client.entities.release import Release
 from vndb_client.entities.staff import Staff
 from vndb_client.entities.tag import Tag
 from vndb_client.entities.trait import Trait
+from vndb_client.entities.ulist import UNSET, UlistEntry, UnsetType
 from vndb_client.entities.vn import VN
 from vndb_client.exceptions import VndbParseError
 from vndb_client.meta import (
@@ -67,6 +68,7 @@ class Client:
         self.tag: QueryResource[Tag] = QueryResource(self, "tag", Tag)
         self.trait: QueryResource[Trait] = QueryResource(self, "trait", Trait)
         self.quote: QueryResource[Quote] = QueryResource(self, "quote", Quote)
+        self.ulist: QueryResource[UlistEntry] = QueryResource(self, "ulist", UlistEntry)
 
     def _query(self, endpoint: str, model: type[ModelT], **params: Any) -> Page[ModelT]:
         spec = core.build_query_request(endpoint, **params)
@@ -100,6 +102,48 @@ class Client:
 
     def schema(self) -> dict[str, Any]:
         return cast("dict[str, Any]", self._get("schema"))
+
+    def _write(self, method: str, path: str, *, json: dict[str, Any] | None = None) -> None:
+        spec = core.RequestSpec(method=method, path=f"/{path.lstrip('/')}", json=json)
+        self._transport.send(spec)
+
+    def set_ulist(
+        self,
+        vn_id: str,
+        *,
+        vote: int | None | UnsetType = UNSET,
+        notes: str | None | UnsetType = UNSET,
+        started: str | None | UnsetType = UNSET,
+        finished: str | None | UnsetType = UNSET,
+        labels: list[int] | None = None,
+        labels_set: list[int] | None = None,
+        labels_unset: list[int] | None = None,
+    ) -> None:
+        body: dict[str, Any] = {}
+        if vote is not UNSET:
+            body["vote"] = vote
+        if notes is not UNSET:
+            body["notes"] = notes
+        if started is not UNSET:
+            body["started"] = started
+        if finished is not UNSET:
+            body["finished"] = finished
+        if labels is not None:
+            body["labels"] = labels
+        if labels_set is not None:
+            body["labels_set"] = labels_set
+        if labels_unset is not None:
+            body["labels_unset"] = labels_unset
+        self._write("PATCH", f"ulist/{vn_id}", json=body)
+
+    def delete_ulist(self, vn_id: str) -> None:
+        self._write("DELETE", f"ulist/{vn_id}")
+
+    def set_rlist(self, release_id: str, *, status: int) -> None:
+        self._write("PATCH", f"rlist/{release_id}", json={"status": status})
+
+    def delete_rlist(self, release_id: str) -> None:
+        self._write("DELETE", f"rlist/{release_id}")
 
     def close(self) -> None:
         self._transport.close()
@@ -145,6 +189,7 @@ class AsyncClient:
         self.tag: AsyncQueryResource[Tag] = AsyncQueryResource(self, "tag", Tag)
         self.trait: AsyncQueryResource[Trait] = AsyncQueryResource(self, "trait", Trait)
         self.quote: AsyncQueryResource[Quote] = AsyncQueryResource(self, "quote", Quote)
+        self.ulist: AsyncQueryResource[UlistEntry] = AsyncQueryResource(self, "ulist", UlistEntry)
 
     async def _query(self, endpoint: str, model: type[ModelT], **params: Any) -> Page[ModelT]:
         spec = core.build_query_request(endpoint, **params)
@@ -178,6 +223,48 @@ class AsyncClient:
 
     async def schema(self) -> dict[str, Any]:
         return cast("dict[str, Any]", await self._get("schema"))
+
+    async def _write(self, method: str, path: str, *, json: dict[str, Any] | None = None) -> None:
+        spec = core.RequestSpec(method=method, path=f"/{path.lstrip('/')}", json=json)
+        await self._transport.send(spec)
+
+    async def set_ulist(
+        self,
+        vn_id: str,
+        *,
+        vote: int | None | UnsetType = UNSET,
+        notes: str | None | UnsetType = UNSET,
+        started: str | None | UnsetType = UNSET,
+        finished: str | None | UnsetType = UNSET,
+        labels: list[int] | None = None,
+        labels_set: list[int] | None = None,
+        labels_unset: list[int] | None = None,
+    ) -> None:
+        body: dict[str, Any] = {}
+        if vote is not UNSET:
+            body["vote"] = vote
+        if notes is not UNSET:
+            body["notes"] = notes
+        if started is not UNSET:
+            body["started"] = started
+        if finished is not UNSET:
+            body["finished"] = finished
+        if labels is not None:
+            body["labels"] = labels
+        if labels_set is not None:
+            body["labels_set"] = labels_set
+        if labels_unset is not None:
+            body["labels_unset"] = labels_unset
+        await self._write("PATCH", f"ulist/{vn_id}", json=body)
+
+    async def delete_ulist(self, vn_id: str) -> None:
+        await self._write("DELETE", f"ulist/{vn_id}")
+
+    async def set_rlist(self, release_id: str, *, status: int) -> None:
+        await self._write("PATCH", f"rlist/{release_id}", json={"status": status})
+
+    async def delete_rlist(self, release_id: str) -> None:
+        await self._write("DELETE", f"rlist/{release_id}")
 
     async def aclose(self) -> None:
         await self._transport.aclose()

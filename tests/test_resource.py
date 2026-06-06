@@ -157,3 +157,53 @@ def test_async_query_serializes_predicate():
 
     asyncio.run(scenario())
     assert captured["body"]["filters"] == ["rating", ">", 50]
+
+
+def test_query_forwards_user_param():
+    captured, handler = _capture()
+    with Client(http_client=_client(handler)) as client:
+        client.vn.query(user="u2")
+    assert captured["body"]["user"] == "u2"
+
+
+def test_query_omits_user_when_absent():
+    captured, handler = _capture()
+    with Client(http_client=_client(handler)) as client:
+        client.vn.query()
+    assert "user" not in captured["body"]
+
+
+def test_ulist_resource_query():
+    import json
+
+    from vndb_client.entities.ulist import UlistEntry
+    from vndb_client.fields import field_spec
+
+    captured = {}
+
+    def handler(request):
+        captured["body"] = json.loads(request.content)
+        return httpx.Response(200, json={"results": [{"id": "v17", "vote": 85}], "more": False})
+
+    with Client(http_client=_client(handler)) as client:
+        assert isinstance(client.ulist, QueryResource)
+        page = client.ulist.query(user="u2")
+    assert captured["body"]["user"] == "u2"
+    assert captured["body"]["fields"] == field_spec(UlistEntry)
+    assert page.results[0].id == "v17"
+    assert isinstance(page.results[0], UlistEntry)
+
+
+def test_async_ulist_resource():
+    from vndb_client.entities.ulist import UlistEntry
+
+    def handler(request):
+        return httpx.Response(200, json={"results": [{"id": "v17"}], "more": False})
+
+    async def scenario():
+        async with AsyncClient(http_client=_aclient(handler)) as client:
+            assert isinstance(client.ulist, AsyncQueryResource)
+            return await client.ulist.query(user="u2")
+
+    page = asyncio.run(scenario())
+    assert isinstance(page.results[0], UlistEntry)

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from enum import IntEnum
 
+from vndb_client.entities.common import Image
 from vndb_client.models import VndbModel
 
 
@@ -21,17 +22,6 @@ class VNLength(IntEnum):
     MEDIUM = 3
     LONG = 4
     VERY_LONG = 5
-
-
-class Image(VndbModel):
-    id: str
-    url: str | None = None
-    dims: list[int] | None = None
-    sexual: float | None = None
-    violence: float | None = None
-    votecount: int | None = None
-    thumbnail: str | None = None
-    thumbnail_dims: list[int] | None = None
 
 
 class Title(VndbModel):

@@ -4,6 +4,7 @@ import asyncio
 import json
 
 import httpx
+import pytest
 
 from vndb_client.client import AsyncClient, Client
 from vndb_client.config import PROD_BASE_URL
@@ -86,3 +87,38 @@ def test_async_vn_attr_and_query():
     page = asyncio.run(scenario())
     assert isinstance(page.results[0], VN)
     assert captured["body"]["page"] == 2
+
+
+_ENTITY_ATTRS = ["release", "producer", "character", "staff", "tag", "trait", "quote"]
+
+
+@pytest.mark.parametrize("attr", _ENTITY_ATTRS)
+def test_entity_attrs_are_query_resources(attr):
+    sync = Client(http_client=_client(lambda r: httpx.Response(200, json={"results": [], "more": False})))
+    assert isinstance(getattr(sync, attr), QueryResource)
+    a = AsyncClient(http_client=_aclient(lambda r: httpx.Response(200, json={"results": [], "more": False})))
+    assert isinstance(getattr(a, attr), AsyncQueryResource)
+
+
+def test_quote_default_fields_include_nested_vn():
+    captured, handler = _capture()
+    with Client(http_client=_client(handler)) as client:
+        client.quote.query()
+    assert "vn.title" in captured["body"]["fields"].split(",")
+
+
+def test_release_default_fields_include_nested_languages():
+    captured, handler = _capture()
+    with Client(http_client=_client(handler)) as client:
+        client.release.query()
+    assert "languages.lang" in captured["body"]["fields"].split(",")
+
+
+def test_character_default_fields_exclude_relational_and_thumbnail():
+    captured, handler = _capture()
+    with Client(http_client=_client(handler)) as client:
+        client.character.query()
+    fields = captured["body"]["fields"].split(",")
+    assert "vns" not in fields
+    assert "traits" not in fields
+    assert "image.thumbnail" not in fields

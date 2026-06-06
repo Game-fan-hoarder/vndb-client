@@ -31,6 +31,23 @@ with Client() as client:
 
 ::: vndb_client.entities.quote
 
+## Filtering
+
+```python
+from vndb_client import Client
+from vndb_client.filters import vn_filters as F
+
+with Client() as client:
+    page = client.vn.query(
+        filters=(F.rating >= 80) & (F.lang == "en"),
+        fields="id,title,rating",
+    )
+```
+
+::: vndb_client.filters.predicate
+
+::: vndb_client.filters.namespaces
+
 ::: vndb_client.config
 
 ::: vndb_client.exceptions

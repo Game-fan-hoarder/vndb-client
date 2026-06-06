@@ -10,6 +10,7 @@ from vndb_client.client import AsyncClient, Client
 from vndb_client.config import PROD_BASE_URL
 from vndb_client.entities.vn import VN
 from vndb_client.fields import field_spec
+from vndb_client.filters import vn_filters as VF
 from vndb_client.models import Page
 from vndb_client.resource import AsyncQueryResource, QueryResource
 
@@ -122,3 +123,37 @@ def test_character_default_fields_exclude_relational_and_thumbnail():
     assert "vns" not in fields
     assert "traits" not in fields
     assert "image.thumbnail" not in fields
+
+
+def test_query_serializes_predicate_filters():
+    captured, handler = _capture()
+    with Client(http_client=_client(handler)) as client:
+        client.vn.query(filters=(VF.rating >= 80) & (VF.lang == "en"))
+    assert captured["body"]["filters"] == ["and", ["rating", ">=", 80], ["lang", "=", "en"]]
+
+
+def test_query_raw_list_filters_unchanged():
+    captured, handler = _capture()
+    with Client(http_client=_client(handler)) as client:
+        client.vn.query(filters=["search", "=", "ever17"])
+    assert captured["body"]["filters"] == ["search", "=", "ever17"]
+
+
+def test_query_nested_relational_predicate():
+    from vndb_client.filters import character_filters as CF
+
+    captured, handler = _capture()
+    with Client(http_client=_client(handler)) as client:
+        client.vn.query(filters=VF.character == (CF.role == "main"))
+    assert captured["body"]["filters"] == ["character", "=", ["role", "=", "main"]]
+
+
+def test_async_query_serializes_predicate():
+    captured, handler = _capture()
+
+    async def scenario():
+        async with AsyncClient(http_client=_aclient(handler)) as client:
+            await client.vn.query(filters=VF.rating > 50)
+
+    asyncio.run(scenario())
+    assert captured["body"]["filters"] == ["rating", ">", 50]

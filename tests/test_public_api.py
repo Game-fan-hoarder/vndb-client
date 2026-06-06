@@ -70,6 +70,6 @@ def test_meta_exports_present():
 def test_user_list_exports_present():
     import vndb_client
 
-    for name in ("UlistEntry", "UlistEntryLabel", "UlistVN", "RListStatus", "UNSET"):
+    for name in ("UlistEntry", "UlistEntryLabel", "UlistVN", "RListStatus", "UNSET", "UnsetType"):
         assert hasattr(vndb_client, name), name
         assert name in vndb_client.__all__

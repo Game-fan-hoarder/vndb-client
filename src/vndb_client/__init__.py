@@ -10,7 +10,7 @@ from vndb_client.entities.release import Release
 from vndb_client.entities.staff import Staff
 from vndb_client.entities.tag import Tag
 from vndb_client.entities.trait import Trait
-from vndb_client.entities.ulist import UNSET, RListStatus, UlistEntry, UlistEntryLabel, UlistVN
+from vndb_client.entities.ulist import UNSET, RListStatus, UlistEntry, UlistEntryLabel, UlistVN, UnsetType
 from vndb_client.entities.vn import VN, DevStatus, Title, VNLength
 from vndb_client.exceptions import (
     VndbAPIError,
@@ -51,6 +51,7 @@ __all__ = [
     "UlistEntryLabel",
     "UlistLabel",
     "UlistVN",
+    "UnsetType",
     "User",
     "VNLength",
     "VndbAPIError",

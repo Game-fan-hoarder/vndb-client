@@ -14,6 +14,13 @@ from vndb_client.config import (
     PROD_BASE_URL,
     RetryConfig,
 )
+from vndb_client.entities.character import Character
+from vndb_client.entities.producer import Producer
+from vndb_client.entities.quote import Quote
+from vndb_client.entities.release import Release
+from vndb_client.entities.staff import Staff
+from vndb_client.entities.tag import Tag
+from vndb_client.entities.trait import Trait
 from vndb_client.entities.vn import VN
 from vndb_client.exceptions import VndbParseError
 from vndb_client.models import Page
@@ -44,6 +51,13 @@ class Client:
             http_client=http_client,
         )
         self.vn: QueryResource[VN] = QueryResource(self, "vn", VN)
+        self.release: QueryResource[Release] = QueryResource(self, "release", Release)
+        self.producer: QueryResource[Producer] = QueryResource(self, "producer", Producer)
+        self.character: QueryResource[Character] = QueryResource(self, "character", Character)
+        self.staff: QueryResource[Staff] = QueryResource(self, "staff", Staff)
+        self.tag: QueryResource[Tag] = QueryResource(self, "tag", Tag)
+        self.trait: QueryResource[Trait] = QueryResource(self, "trait", Trait)
+        self.quote: QueryResource[Quote] = QueryResource(self, "quote", Quote)
 
     def _query(self, endpoint: str, model: type[ModelT], **params: Any) -> Page[ModelT]:
         spec = core.build_query_request(endpoint, **params)
@@ -91,6 +105,13 @@ class AsyncClient:
             http_client=http_client,
         )
         self.vn: AsyncQueryResource[VN] = AsyncQueryResource(self, "vn", VN)
+        self.release: AsyncQueryResource[Release] = AsyncQueryResource(self, "release", Release)
+        self.producer: AsyncQueryResource[Producer] = AsyncQueryResource(self, "producer", Producer)
+        self.character: AsyncQueryResource[Character] = AsyncQueryResource(self, "character", Character)
+        self.staff: AsyncQueryResource[Staff] = AsyncQueryResource(self, "staff", Staff)
+        self.tag: AsyncQueryResource[Tag] = AsyncQueryResource(self, "tag", Tag)
+        self.trait: AsyncQueryResource[Trait] = AsyncQueryResource(self, "trait", Trait)
+        self.quote: AsyncQueryResource[Quote] = AsyncQueryResource(self, "quote", Quote)
 
     async def _query(self, endpoint: str, model: type[ModelT], **params: Any) -> Page[ModelT]:
         spec = core.build_query_request(endpoint, **params)

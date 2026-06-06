@@ -1,6 +1,28 @@
 from __future__ import annotations
 
+from enum import IntEnum
+
 from vndb_client.models import VndbModel
+
+
+class UnsetType:
+    """Sentinel marking a PATCH field as 'not provided' (distinct from None=unset)."""
+
+    def __repr__(self) -> str:
+        return "UNSET"
+
+
+UNSET = UnsetType()
+
+
+class RListStatus(IntEnum):
+    """Mirror of VNDB rlist ``status`` values (for comparison; not a field type)."""
+
+    UNKNOWN = 0
+    PENDING = 1
+    OBTAINED = 2
+    ON_LOAN = 3
+    DELETED = 4
 
 
 class UlistVN(VndbModel):

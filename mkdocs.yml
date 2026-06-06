@@ -9,7 +9,22 @@ copyright: Maintained by <a href="https://HOZHENWAI.com">HOZHENWAI</a>.
 
 nav:
   - Home: index.md
-  - Modules: modules.md
+  - Guides:
+      - Getting started: guides/getting-started.md
+      - Authentication: guides/authentication.md
+      - Querying: guides/querying.md
+      - Filtering: guides/filtering.md
+      - Entities: guides/entities.md
+      - User lists: guides/user-lists.md
+      - Error handling: guides/error-handling.md
+  - API Reference:
+      - Client: reference/client.md
+      - Models & resources: reference/models.md
+      - Entities: reference/entities.md
+      - Filters: reference/filters.md
+      - GET endpoints: reference/meta.md
+      - Configuration: reference/config.md
+      - Exceptions: reference/exceptions.md
 plugins:
   - search
   - mkdocstrings:

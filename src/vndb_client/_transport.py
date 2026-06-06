@@ -6,6 +6,7 @@ import time
 import httpx
 
 from vndb_client import core
+from vndb_client._cache import ResponseCache, cache_key, is_cacheable
 from vndb_client.config import (
     DEFAULT_TIMEOUT,
     DEFAULT_USER_AGENT,
@@ -55,13 +56,16 @@ class SyncTransport:
         user_agent: str = DEFAULT_USER_AGENT,
         retry: RetryConfig | None = None,
         http_client: httpx.Client | None = None,
+        cache_ttl: float | None = None,
+        cache_maxsize: int = 128,
     ) -> None:
         self._policy = RetryPolicy(retry or RetryConfig())
         self._headers = _build_headers(token, user_agent)
         self._owns_client = http_client is None
         self._client = http_client or httpx.Client(base_url=base_url, timeout=timeout)
+        self._cache = ResponseCache(cache_ttl, cache_maxsize) if cache_ttl is not None and cache_ttl > 0 else None
 
-    def send(self, spec: RequestSpec) -> httpx.Response:
+    def _send_uncached(self, spec: RequestSpec) -> httpx.Response:
         attempt = 0
         while True:
             attempt += 1
@@ -88,6 +92,17 @@ class SyncTransport:
                 raise VndbNetworkError(str(exc)) from exc
             core.raise_for_status(response.status_code, response.text)
 
+    def send(self, spec: RequestSpec) -> httpx.Response:
+        if self._cache is None or not is_cacheable(spec):
+            return self._send_uncached(spec)
+        key = cache_key(spec)
+        cached = self._cache.get(key)
+        if cached is not None:
+            return cached
+        response = self._send_uncached(spec)
+        self._cache.set(key, response)
+        return response
+
     def close(self) -> None:
         if self._owns_client:
             self._client.close()
@@ -105,13 +120,16 @@ class AsyncTransport:
         user_agent: str = DEFAULT_USER_AGENT,
         retry: RetryConfig | None = None,
         http_client: httpx.AsyncClient | None = None,
+        cache_ttl: float | None = None,
+        cache_maxsize: int = 128,
     ) -> None:
         self._policy = RetryPolicy(retry or RetryConfig())
         self._headers = _build_headers(token, user_agent)
         self._owns_client = http_client is None
         self._client = http_client or httpx.AsyncClient(base_url=base_url, timeout=timeout)
+        self._cache = ResponseCache(cache_ttl, cache_maxsize) if cache_ttl is not None and cache_ttl > 0 else None
 
-    async def send(self, spec: RequestSpec) -> httpx.Response:
+    async def _send_uncached(self, spec: RequestSpec) -> httpx.Response:
         attempt = 0
         while True:
             attempt += 1
@@ -137,6 +155,17 @@ class AsyncTransport:
             if response is None:
                 raise VndbNetworkError(str(exc)) from exc
             core.raise_for_status(response.status_code, response.text)
+
+    async def send(self, spec: RequestSpec) -> httpx.Response:
+        if self._cache is None or not is_cacheable(spec):
+            return await self._send_uncached(spec)
+        key = cache_key(spec)
+        cached = self._cache.get(key)
+        if cached is not None:
+            return cached
+        response = await self._send_uncached(spec)
+        self._cache.set(key, response)
+        return response
 
     async def aclose(self) -> None:
         if self._owns_client:

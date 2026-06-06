@@ -68,3 +68,22 @@ with Client() as client:
     page = client.vn.query(filters=["search", "=", "key"], sort="rating", reverse=True)
     print([vn.title for vn in page.results])
 ```
+
+## Response caching
+
+Reads are not cached by default. Pass `cache_ttl` (seconds) to enable an
+in-memory cache of read responses on a client; identical reads within the TTL are
+served without a network call:
+
+```python
+from vndb_client import Client
+
+with Client(cache_ttl=60.0) as client:
+    client.vn.query(filters=["search", "=", "ever17"])  # network
+    client.vn.query(filters=["search", "=", "ever17"])  # served from cache
+```
+
+The cache is per-client (not shared across clients or tokens), bounded by
+`cache_maxsize` (default 128, least-recently-used eviction), and applies only to
+reads — writes (`set_ulist`/`delete_ulist`/`set_rlist`/`delete_rlist`) always hit
+the API. Staleness is bounded by `cache_ttl`.

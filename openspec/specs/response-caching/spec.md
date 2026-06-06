@@ -1,11 +1,14 @@
-## ADDED Requirements
+# response-caching Specification
 
+## Purpose
+TBD - created by archiving change response-caching. Update Purpose after archive.
+## Requirements
 ### Requirement: Opt-in response cache
 
 The client SHALL support an opt-in in-memory response cache, enabled by a
 `cache_ttl` argument on `Client` and `AsyncClient` (with an optional
-`cache_maxsize`). When `cache_ttl` is unset (the default), no caching SHALL occur
-and behavior is unchanged.
+`cache_maxsize`). When `cache_ttl` is unset (the default) or non-positive, no
+caching SHALL occur and behavior is unchanged.
 
 #### Scenario: Caching disabled by default
 - **WHEN** a client is constructed without `cache_ttl`
@@ -56,3 +59,4 @@ least-recently-used entries beyond the bound.
 #### Scenario: Bounded by maxsize
 - **WHEN** more distinct reads are cached than `cache_maxsize`
 - **THEN** the least-recently-used entries are evicted to stay within the bound
+

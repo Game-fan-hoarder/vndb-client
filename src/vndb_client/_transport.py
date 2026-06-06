@@ -63,7 +63,7 @@ class SyncTransport:
         self._headers = _build_headers(token, user_agent)
         self._owns_client = http_client is None
         self._client = http_client or httpx.Client(base_url=base_url, timeout=timeout)
-        self._cache = ResponseCache(cache_ttl, cache_maxsize) if cache_ttl is not None else None
+        self._cache = ResponseCache(cache_ttl, cache_maxsize) if cache_ttl is not None and cache_ttl > 0 else None
 
     def _send_uncached(self, spec: RequestSpec) -> httpx.Response:
         attempt = 0
@@ -127,7 +127,7 @@ class AsyncTransport:
         self._headers = _build_headers(token, user_agent)
         self._owns_client = http_client is None
         self._client = http_client or httpx.AsyncClient(base_url=base_url, timeout=timeout)
-        self._cache = ResponseCache(cache_ttl, cache_maxsize) if cache_ttl is not None else None
+        self._cache = ResponseCache(cache_ttl, cache_maxsize) if cache_ttl is not None and cache_ttl > 0 else None
 
     async def _send_uncached(self, spec: RequestSpec) -> httpx.Response:
         attempt = 0

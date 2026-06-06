@@ -4,8 +4,8 @@
 
 The client SHALL support an opt-in in-memory response cache, enabled by a
 `cache_ttl` argument on `Client` and `AsyncClient` (with an optional
-`cache_maxsize`). When `cache_ttl` is unset (the default), no caching SHALL occur
-and behavior is unchanged.
+`cache_maxsize`). When `cache_ttl` is unset (the default) or non-positive, no
+caching SHALL occur and behavior is unchanged.
 
 #### Scenario: Caching disabled by default
 - **WHEN** a client is constructed without `cache_ttl`

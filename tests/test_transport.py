@@ -234,3 +234,11 @@ def test_async_cache_serves_repeated_read_once():
 
     asyncio.run(scenario())
     assert calls["n"] == 1
+
+
+def test_cache_ttl_zero_disables_caching():
+    calls, handler = _counting_handler()
+    t = SyncTransport(http_client=_mock_client(handler), cache_ttl=0.0)
+    t.send(SPEC)
+    t.send(SPEC)
+    assert calls["n"] == 2  # non-positive ttl => caching disabled

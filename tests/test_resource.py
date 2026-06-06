@@ -4,7 +4,7 @@ import asyncio
 import json
 
 import httpx
-import pytest as _pytest
+import pytest
 
 from vndb_client.client import AsyncClient, Client
 from vndb_client.config import PROD_BASE_URL
@@ -92,7 +92,7 @@ def test_async_vn_attr_and_query():
 _ENTITY_ATTRS = ["release", "producer", "character", "staff", "tag", "trait", "quote"]
 
 
-@_pytest.mark.parametrize("attr", _ENTITY_ATTRS)
+@pytest.mark.parametrize("attr", _ENTITY_ATTRS)
 def test_entity_attrs_are_query_resources(attr):
     sync = Client(http_client=_client(lambda r: httpx.Response(200, json={"results": [], "more": False})))
     assert isinstance(getattr(sync, attr), QueryResource)

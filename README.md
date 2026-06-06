@@ -1,74 +1,75 @@
 # vndb-client
 
-[![Release](https://img.shields.io/github/v/release/HOZHENWAI/vndb-client)](https://img.shields.io/github/v/release/HOZHENWAI/vndb-client)
+[![Release](https://img.shields.io/github/v/release/HOZHENWAI/vndb-client)](https://github.com/HOZHENWAI/vndb-client/releases)
 [![Build status](https://img.shields.io/github/actions/workflow/status/HOZHENWAI/vndb-client/main.yml?branch=main)](https://github.com/HOZHENWAI/vndb-client/actions/workflows/main.yml?query=branch%3Amain)
 [![codecov](https://codecov.io/gh/HOZHENWAI/vndb-client/branch/main/graph/badge.svg)](https://codecov.io/gh/HOZHENWAI/vndb-client)
-[![Commit activity](https://img.shields.io/github/commit-activity/m/HOZHENWAI/vndb-client)](https://img.shields.io/github/commit-activity/m/HOZHENWAI/vndb-client)
-[![License](https://img.shields.io/github/license/HOZHENWAI/vndb-client)](https://img.shields.io/github/license/HOZHENWAI/vndb-client)
+[![License](https://img.shields.io/github/license/HOZHENWAI/vndb-client)](https://github.com/HOZHENWAI/vndb-client/blob/main/LICENSE)
 
-Http based Vndb Client.
+A fully typed, HTTP-based Python client for the [VNDB](https://vndb.org) (Visual Novel Database) [Kana API](https://api.vndb.org/kana).
 
-- **Github repository**: <https://github.com/HOZHENWAI/vndb-client/>
-- **Documentation** <https://HOZHENWAI.github.io/vndb-client/>
+- **Documentation:** <https://HOZHENWAI.github.io/vndb-client/>
+- **Source:** <https://github.com/HOZHENWAI/vndb-client/>
 
-## Getting started with your project
+## Features
 
-### 1. Create a New Repository
+- Synchronous (`Client`) and asynchronous (`AsyncClient`) interfaces sharing one core.
+- Typed Pydantic models for every entity: visual novels, releases, producers, characters, staff, tags, traits, quotes.
+- A composable filter DSL — `(vn_filters.rating >= 80) & (vn_filters.lang == "en")`.
+- Simple GET endpoints: `stats`, `authinfo`, `get_user`, `ulist_labels`, `schema`.
+- User-list read and write: query a user's list, then `set_ulist` / `delete_ulist` / `set_rlist` / `delete_rlist`.
+- Ships `py.typed`; strict mypy-clean.
 
-First, create a repository on GitHub with the same name as this project, and then run the following commands:
-
-```bash
-git init -b main
-git add .
-git commit -m "init commit"
-git remote add origin git@github.com:HOZHENWAI/vndb-client.git
-git push -u origin main
-```
-
-### 2. Set Up Your Development Environment
-
-Then, install the environment and the pre-commit hooks with
+## Installation
 
 ```bash
-make install
+pip install vndb-client
 ```
 
-This will also generate your `uv.lock` file
+## Quickstart
 
-### 3. Run the pre-commit hooks
+Synchronous:
 
-Initially, the CI/CD pipeline might be failing due to formatting issues. To resolve those run:
+```python
+from vndb_client import Client
 
-```bash
-uv run pre-commit run -a
+with Client() as client:
+    page = client.vn.query(filters=["search", "=", "ever17"], results=5)
+    for vn in page.results:
+        print(vn.id, vn.title)
 ```
 
-### 4. Commit the changes
+Asynchronous:
 
-Lastly, commit the changes made by the two steps above to your repository.
+```python
+import asyncio
+from vndb_client import AsyncClient
 
-```bash
-git add .
-git commit -m 'Fix formatting issues'
-git push origin main
+async def main() -> None:
+    async with AsyncClient() as client:
+        page = await client.vn.query(filters=["search", "=", "ever17"], results=5)
+        for vn in page.results:
+            print(vn.id, vn.title)
+
+asyncio.run(main())
 ```
 
-You are now ready to start development on your project!
-The CI/CD pipeline will be triggered when you open a pull request, merge to main, or when you create a new release.
+## Authentication
 
-To finalize the set-up for publishing to PyPI, see [here](https://fpgmaas.github.io/cookiecutter-uv/features/publishing/#set-up-for-pypi).
-For activating the automatic documentation with MkDocs/Zensical, see [here](https://fpgmaas.github.io/cookiecutter-uv/features/docs_tool/#deploying-to-github-pages).
-To enable the code coverage reports, see [here](https://fpgmaas.github.io/cookiecutter-uv/features/codecov/).
+Read-only endpoints work without a token. User-list writes and `authinfo`
+require a [VNDB API token](https://vndb.org/u/tokens):
 
-## Releasing a new version
+```python
+from vndb_client import Client
 
-- Create an API Token on [PyPI](https://pypi.org/).
-- Add the API Token to your projects secrets with the name `PYPI_TOKEN` by visiting [this page](https://github.com/HOZHENWAI/vndb-client/settings/secrets/actions/new).
-- Create a [new release](https://github.com/HOZHENWAI/vndb-client/releases/new) on Github.
-- Create a new tag in the form `*.*.*`.
+with Client(token="your-token") as client:
+    client.set_ulist("v17", vote=90)
+```
 
-For more details, see [here](https://fpgmaas.github.io/cookiecutter-uv/features/cicd/#how-to-trigger-a-release).
+## Documentation
 
----
+Full guides and the API reference live at
+<https://HOZHENWAI.github.io/vndb-client/>.
 
-Repository initiated with [osprey-oss/cookiecutter-uv](https://github.com/osprey-oss/cookiecutter-uv).
+## License
+
+MIT — see [LICENSE](LICENSE).

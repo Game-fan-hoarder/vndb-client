@@ -5,6 +5,12 @@ import pytest
 from vndb_client.filters.predicate import Comparison, Compound, Field, Predicate, resolve_filters
 
 
+def test_bare_field_as_value_raises():
+    pred = Field("a") == Field("b")
+    with pytest.raises(TypeError, match="not a valid filter value"):
+        pred.to_filter()
+
+
 def test_each_operator_maps_to_symbol():
     f = Field("rating")
     assert (f == 80).to_filter() == ["rating", "=", 80]

@@ -17,6 +17,9 @@ class Predicate:
 
 
 def _serialize_value(value: Any) -> Any:
+    if isinstance(value, Field):
+        msg = f"a bare Field ({value.name!r}) is not a valid filter value; use a comparison operator"
+        raise TypeError(msg)
     return value.to_filter() if isinstance(value, Predicate) else value
 
 
@@ -54,7 +57,11 @@ class Compound(Predicate):
 
 
 class Field:
-    """A filterable field; comparison operators build :class:`Comparison`s."""
+    """A filterable field; comparison operators build :class:`Comparison`s.
+
+    Because ``&``/``|`` bind looser than comparison operators in Python, wrap each
+    comparison in parentheses when composing: ``(f.rating >= 80) & (f.lang == "en")``.
+    """
 
     def __init__(self, name: str) -> None:
         self.name = name

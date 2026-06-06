@@ -23,7 +23,6 @@ from vndb_client.entities.tag import Tag
 from vndb_client.entities.trait import Trait
 from vndb_client.entities.ulist import UNSET, UlistEntry, UnsetType
 from vndb_client.entities.vn import VN
-from vndb_client.exceptions import VndbParseError
 from vndb_client.meta import (
     AuthInfo,
     Stats,
@@ -73,20 +72,13 @@ class Client:
     def _query(self, endpoint: str, model: type[ModelT], **params: Any) -> Page[ModelT]:
         spec = core.build_query_request(endpoint, **params)
         response = self._transport.send(spec)
-        try:
-            raw = response.json()
-        except ValueError as exc:
-            raise VndbParseError(str(exc)) from exc
-        return core.parse_page(raw, model)
+        return core.parse_page(core.decode_json(response), model)
 
     def _get(self, path: str, *, params: dict[str, Any] | None = None) -> Any:
         clean = {key: value for key, value in (params or {}).items() if value is not None}
         spec = core.RequestSpec(method="GET", path=f"/{path.lstrip('/')}", params=clean or None)
         response = self._transport.send(spec)
-        try:
-            return response.json()
-        except ValueError as exc:
-            raise VndbParseError(str(exc)) from exc
+        return core.decode_json(response)
 
     def stats(self) -> Stats:
         return parse_one(Stats, self._get("stats"))
@@ -194,20 +186,13 @@ class AsyncClient:
     async def _query(self, endpoint: str, model: type[ModelT], **params: Any) -> Page[ModelT]:
         spec = core.build_query_request(endpoint, **params)
         response = await self._transport.send(spec)
-        try:
-            raw = response.json()
-        except ValueError as exc:
-            raise VndbParseError(str(exc)) from exc
-        return core.parse_page(raw, model)
+        return core.parse_page(core.decode_json(response), model)
 
     async def _get(self, path: str, *, params: dict[str, Any] | None = None) -> Any:
         clean = {key: value for key, value in (params or {}).items() if value is not None}
         spec = core.RequestSpec(method="GET", path=f"/{path.lstrip('/')}", params=clean or None)
         response = await self._transport.send(spec)
-        try:
-            return response.json()
-        except ValueError as exc:
-            raise VndbParseError(str(exc)) from exc
+        return core.decode_json(response)
 
     async def stats(self) -> Stats:
         return parse_one(Stats, await self._get("stats"))

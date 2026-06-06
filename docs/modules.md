@@ -48,6 +48,18 @@ with Client() as client:
 
 ::: vndb_client.filters.namespaces
 
+## Simple GET endpoints
+
+```python
+from vndb_client import Client
+
+with Client() as client:
+    print(client.stats().vn)                 # total visual novels
+    users = client.get_user(["u1", "Nemo"])  # {"u1": User|None, "Nemo": User|None}
+```
+
+::: vndb_client.meta
+
 ::: vndb_client.config
 
 ::: vndb_client.exceptions

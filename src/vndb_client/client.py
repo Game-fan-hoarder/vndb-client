@@ -23,7 +23,15 @@ from vndb_client.entities.tag import Tag
 from vndb_client.entities.trait import Trait
 from vndb_client.entities.vn import VN
 from vndb_client.exceptions import VndbParseError
-from vndb_client.meta import AuthInfo, Stats, UlistLabel, User
+from vndb_client.meta import (
+    AuthInfo,
+    Stats,
+    UlistLabel,
+    User,
+    parse_labels,
+    parse_one,
+    parse_user_map,
+)
 from vndb_client.models import Page
 from vndb_client.resource import AsyncQueryResource, QueryResource
 
@@ -79,21 +87,16 @@ class Client:
             raise VndbParseError(str(exc)) from exc
 
     def stats(self) -> Stats:
-        return Stats.model_validate(self._get("stats"))
+        return parse_one(Stats, self._get("stats"))
 
     def authinfo(self) -> AuthInfo:
-        return AuthInfo.model_validate(self._get("authinfo"))
+        return parse_one(AuthInfo, self._get("authinfo"))
 
     def get_user(self, q: str | list[str], *, fields: str | None = None) -> dict[str, User | None]:
-        raw = self._get("user", params={"q": q, "fields": fields})
-        result: dict[str, User | None] = {}
-        for key, value in raw.items():
-            result[key] = User.model_validate(value) if value is not None else None
-        return result
+        return parse_user_map(self._get("user", params={"q": q, "fields": fields}))
 
     def ulist_labels(self, user: str | None = None, *, fields: str | None = None) -> list[UlistLabel]:
-        raw = self._get("ulist_labels", params={"user": user, "fields": fields})
-        return [UlistLabel.model_validate(item) for item in raw["labels"]]
+        return parse_labels(self._get("ulist_labels", params={"user": user, "fields": fields}))
 
     def schema(self) -> dict[str, Any]:
         return cast("dict[str, Any]", self._get("schema"))
@@ -162,21 +165,16 @@ class AsyncClient:
             raise VndbParseError(str(exc)) from exc
 
     async def stats(self) -> Stats:
-        return Stats.model_validate(await self._get("stats"))
+        return parse_one(Stats, await self._get("stats"))
 
     async def authinfo(self) -> AuthInfo:
-        return AuthInfo.model_validate(await self._get("authinfo"))
+        return parse_one(AuthInfo, await self._get("authinfo"))
 
     async def get_user(self, q: str | list[str], *, fields: str | None = None) -> dict[str, User | None]:
-        raw = await self._get("user", params={"q": q, "fields": fields})
-        result: dict[str, User | None] = {}
-        for key, value in raw.items():
-            result[key] = User.model_validate(value) if value is not None else None
-        return result
+        return parse_user_map(await self._get("user", params={"q": q, "fields": fields}))
 
     async def ulist_labels(self, user: str | None = None, *, fields: str | None = None) -> list[UlistLabel]:
-        raw = await self._get("ulist_labels", params={"user": user, "fields": fields})
-        return [UlistLabel.model_validate(item) for item in raw["labels"]]
+        return parse_labels(await self._get("ulist_labels", params={"user": user, "fields": fields}))
 
     async def schema(self) -> dict[str, Any]:
         return cast("dict[str, Any]", await self._get("schema"))

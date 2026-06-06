@@ -131,3 +131,39 @@ def test_async_stats_and_get_user():
     stats, users = asyncio.run(scenario())
     assert isinstance(stats, Stats)
     assert isinstance(users["u1"], User)
+
+
+def test_malformed_response_raises_vndb_parse_error():
+    import pytest
+
+    from vndb_client.exceptions import VndbParseError
+
+    def handler(request):  # /stats missing required int counts
+        return httpx.Response(200, json={"chars": "not-an-int"})
+
+    with Client(http_client=_client(handler)) as client, pytest.raises(VndbParseError):
+        client.stats()
+
+
+def test_ulist_labels_missing_key_raises_parse_error():
+    import pytest
+
+    from vndb_client.exceptions import VndbParseError
+
+    def handler(request):
+        return httpx.Response(200, json={"unexpected": []})
+
+    with Client(http_client=_client(handler)) as client, pytest.raises(VndbParseError):
+        client.ulist_labels()
+
+
+def test_get_user_non_dict_raises_parse_error():
+    import pytest
+
+    from vndb_client.exceptions import VndbParseError
+
+    def handler(request):
+        return httpx.Response(200, json=["not", "a", "map"])
+
+    with Client(http_client=_client(handler)) as client, pytest.raises(VndbParseError):
+        client.get_user("u1")

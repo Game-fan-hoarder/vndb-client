@@ -38,3 +38,22 @@ def test_entity_coverage_exports_present():
     for name in ("Release", "Producer", "Character", "Staff", "Tag", "Trait", "Quote", "ImageBase"):
         assert hasattr(vndb_client, name), name
         assert name in vndb_client.__all__
+
+
+def test_filters_package_exports():
+    import vndb_client.filters as f
+
+    for name in (
+        "vn_filters",
+        "release_filters",
+        "producer_filters",
+        "character_filters",
+        "staff_filters",
+        "tag_filters",
+        "trait_filters",
+        "quote_filters",
+        "field",
+        "Predicate",
+    ):
+        assert hasattr(f, name), name
+        assert name in f.__all__

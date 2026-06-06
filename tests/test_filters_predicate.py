@@ -11,6 +11,18 @@ def test_bare_field_as_value_raises():
         pred.to_filter()
 
 
+def test_field_is_immutable():
+    f = Field("rating")
+    with pytest.raises(AttributeError, match="immutable"):
+        f.name = "hacked"
+    assert f.name == "rating"
+
+
+def test_predicate_is_abstract():
+    with pytest.raises(TypeError):
+        Predicate()  # type: ignore[abstract]
+
+
 def test_each_operator_maps_to_symbol():
     f = Field("rating")
     assert (f == 80).to_filter() == ["rating", "=", 80]

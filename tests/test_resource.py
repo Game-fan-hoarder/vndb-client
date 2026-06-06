@@ -237,3 +237,29 @@ def test_async_query_forwards_filter_echo_flags_and_compact_string():
     assert captured["body"]["filters"] == "compact-async"
     assert captured["body"]["normalized_filters"] is True
     assert "compact_filters" not in captured["body"]
+
+
+def test_client_cache_ttl_serves_repeated_query_once():
+    calls = {"n": 0}
+
+    def handler(request):
+        calls["n"] += 1
+        return httpx.Response(200, json=VN_RESPONSE)
+
+    with Client(http_client=_client(handler), cache_ttl=60.0) as client:
+        client.vn.query(filters=["search", "=", "ever"])
+        client.vn.query(filters=["search", "=", "ever"])
+    assert calls["n"] == 1
+
+
+def test_client_without_cache_queries_each_time():
+    calls = {"n": 0}
+
+    def handler(request):
+        calls["n"] += 1
+        return httpx.Response(200, json=VN_RESPONSE)
+
+    with Client(http_client=_client(handler)) as client:
+        client.vn.query(filters=["search", "=", "ever"])
+        client.vn.query(filters=["search", "=", "ever"])
+    assert calls["n"] == 2

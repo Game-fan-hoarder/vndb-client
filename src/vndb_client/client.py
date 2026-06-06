@@ -50,6 +50,8 @@ class Client:
         user_agent: str = DEFAULT_USER_AGENT,
         retry: RetryConfig | None = None,
         http_client: httpx.Client | None = None,
+        cache_ttl: float | None = None,
+        cache_maxsize: int = 128,
     ) -> None:
         self._transport = SyncTransport(
             token=token,
@@ -58,6 +60,8 @@ class Client:
             user_agent=user_agent,
             retry=retry,
             http_client=http_client,
+            cache_ttl=cache_ttl,
+            cache_maxsize=cache_maxsize,
         )
         self.vn: QueryResource[VN] = QueryResource(self, "vn", VN)
         self.release: QueryResource[Release] = QueryResource(self, "release", Release)
@@ -220,6 +224,8 @@ class AsyncClient:
         user_agent: str = DEFAULT_USER_AGENT,
         retry: RetryConfig | None = None,
         http_client: httpx.AsyncClient | None = None,
+        cache_ttl: float | None = None,
+        cache_maxsize: int = 128,
     ) -> None:
         self._transport = AsyncTransport(
             token=token,
@@ -228,6 +234,8 @@ class AsyncClient:
             user_agent=user_agent,
             retry=retry,
             http_client=http_client,
+            cache_ttl=cache_ttl,
+            cache_maxsize=cache_maxsize,
         )
         self.vn: AsyncQueryResource[VN] = AsyncQueryResource(self, "vn", VN)
         self.release: AsyncQueryResource[Release] = AsyncQueryResource(self, "release", Release)

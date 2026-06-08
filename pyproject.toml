@@ -2,7 +2,7 @@
 name = "vndb-client"
 version = "1.0.0"
 description = "Http based Vndb Client."
-authors = [{ name = "Olivier HO", email = "hozhenwai@gmail.com" }]
+authors = [{ name = "HOZHENWAI", email = "hozhenwai@gmail.com" }]
 readme = "README.md"
 license = "MIT"
 license-files = ["LICENSE"]
@@ -29,9 +29,9 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://HOZHENWAI.github.io/vndb-client/"
-Repository = "https://github.com/HOZHENWAI/vndb-client"
-Documentation = "https://HOZHENWAI.github.io/vndb-client/"
+Homepage = "https://game-fan-hoarder.github.io/vndb-client/"
+Repository = "https://github.com/Game-fan-hoarder/vndb-client"
+Documentation = "https://game-fan-hoarder.github.io/vndb-client/"
 
 [dependency-groups]
 dev = [

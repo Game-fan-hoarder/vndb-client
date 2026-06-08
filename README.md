@@ -1,14 +1,14 @@
 # vndb-client
 
-[![Release](https://img.shields.io/github/v/release/HOZHENWAI/vndb-client)](https://github.com/HOZHENWAI/vndb-client/releases)
-[![Build status](https://img.shields.io/github/actions/workflow/status/HOZHENWAI/vndb-client/main.yml?branch=main)](https://github.com/HOZHENWAI/vndb-client/actions/workflows/main.yml?query=branch%3Amain)
-[![codecov](https://codecov.io/gh/HOZHENWAI/vndb-client/branch/main/graph/badge.svg)](https://codecov.io/gh/HOZHENWAI/vndb-client)
-[![License](https://img.shields.io/github/license/HOZHENWAI/vndb-client)](https://github.com/HOZHENWAI/vndb-client/blob/main/LICENSE)
+[![Release](https://img.shields.io/github/v/release/Game-fan-hoarder/vndb-client)](https://github.com/Game-fan-hoarder/vndb-client/releases)
+[![Build status](https://img.shields.io/github/actions/workflow/status/Game-fan-hoarder/vndb-client/main.yml?branch=main)](https://github.com/Game-fan-hoarder/vndb-client/actions/workflows/main.yml?query=branch%3Amain)
+[![codecov](https://codecov.io/gh/Game-fan-hoarder/vndb-client/branch/main/graph/badge.svg)](https://codecov.io/gh/Game-fan-hoarder/vndb-client)
+[![License](https://img.shields.io/github/license/Game-fan-hoarder/vndb-client)](https://github.com/Game-fan-hoarder/vndb-client/blob/main/LICENSE)
 
 A fully typed, HTTP-based Python client for the [VNDB](https://vndb.org) (Visual Novel Database) [Kana API](https://api.vndb.org/kana).
 
-- **Documentation:** <https://HOZHENWAI.github.io/vndb-client/>
-- **Source:** <https://github.com/HOZHENWAI/vndb-client/>
+- **Documentation:** <https://game-fan-hoarder.github.io/vndb-client/>
+- **Source:** <https://github.com/Game-fan-hoarder/vndb-client/>
 
 ## Features
 
@@ -68,8 +68,8 @@ with Client(token="your-token") as client:
 ## Documentation
 
 Full guides and the API reference live at
-<https://HOZHENWAI.github.io/vndb-client/>.
+<https://game-fan-hoarder.github.io/vndb-client/>.
 
 ## License
 
-MIT — see [LICENSE](https://github.com/HOZHENWAI/vndb-client/blob/main/LICENSE).
+MIT — see [LICENSE](https://github.com/Game-fan-hoarder/vndb-client/blob/main/LICENSE).

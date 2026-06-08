@@ -6,7 +6,7 @@ PROD_BASE_URL = "https://api.vndb.org/kana"
 SANDBOX_BASE_URL = "https://beta.vndb.org/api/kana"
 
 DEFAULT_TIMEOUT = 30.0
-DEFAULT_USER_AGENT = "vndb-client/0.0.1 (+https://github.com/HOZHENWAI/vndb-client)"
+DEFAULT_USER_AGENT = "vndb-client/1.0.0 (+https://github.com/Game-fan-hoarder/vndb-client)"
 
 
 @dataclass(frozen=True)

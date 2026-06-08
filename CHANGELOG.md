@@ -28,4 +28,4 @@ First stable release.
   `set_rlist`, `delete_rlist`, with an `UNSET` sentinel for omit-vs-null bodies.
 - `py.typed` marker for downstream type checkers.
 
-[1.0.0]: https://github.com/HOZHENWAI/vndb-client/releases/tag/1.0.0
+[1.0.0]: https://github.com/Game-fan-hoarder/vndb-client/releases/tag/1.0.0

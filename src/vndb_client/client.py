@@ -39,7 +39,36 @@ ModelT = TypeVar("ModelT", bound=BaseModel)
 
 
 class Client:
-    """Synchronous VNDB Kana API client."""
+    """Synchronous VNDB Kana API client.
+
+    The client owns an HTTP transport and exposes one typed query resource per
+    entity (``vn``, ``release``, ``producer``, ``character``, ``staff``, ``tag``,
+    ``trait``, ``quote``, ``ulist``), plus the simple GET endpoints and user-list
+    write helpers. Use it as a context manager so the underlying connection pool
+    is closed on exit.
+
+    Read-only endpoints work without a token; a `VNDB API token
+    <https://vndb.org/u/tokens>`_ is only required for user-list writes and
+    ``authinfo``.
+
+    Example:
+        >>> from vndb_client import Client
+        >>> with Client() as client:
+        ...     page = client.vn.query(filters=["id", "=", "v17"])
+        ...     page.results[0].title
+        'Ever17 -the out of infinity-'
+
+    Attributes:
+        vn: Query resource for visual novels (``/vn``).
+        release: Query resource for releases (``/release``).
+        producer: Query resource for producers (``/producer``).
+        character: Query resource for characters (``/character``).
+        staff: Query resource for staff (``/staff``).
+        tag: Query resource for tags (``/tag``).
+        trait: Query resource for traits (``/trait``).
+        quote: Query resource for quotes (``/quote``).
+        ulist: Query resource for user-list entries (``/ulist``).
+    """
 
     def __init__(
         self,
@@ -53,6 +82,27 @@ class Client:
         cache_ttl: float | None = None,
         cache_maxsize: int = 128,
     ) -> None:
+        """Create a synchronous client.
+
+        Args:
+            token: VNDB API token for authenticated requests. Omit for
+                read-only access.
+            base_url: API base URL. Defaults to production
+                (``https://api.vndb.org/kana``); use ``SANDBOX_BASE_URL`` to
+                target the sandbox.
+            timeout: Per-request timeout in seconds.
+            user_agent: ``User-Agent`` header sent with every request.
+            retry: Retry policy for transient failures. ``None`` uses the
+                default :class:`~vndb_client.config.RetryConfig`.
+            http_client: An existing ``httpx.Client`` to reuse. When provided,
+                ``base_url``/``timeout`` on this client are not applied to it and
+                its lifecycle is the caller's responsibility.
+            cache_ttl: Time-to-live in seconds for the in-memory read cache.
+                ``None`` (or a non-positive value) disables caching; reads are
+                not cached by default.
+            cache_maxsize: Maximum number of cached read responses before
+                least-recently-used eviction. Only used when ``cache_ttl`` is set.
+        """
         self._transport = SyncTransport(
             token=token,
             base_url=base_url,
@@ -213,7 +263,34 @@ class Client:
 
 
 class AsyncClient:
-    """Asynchronous VNDB Kana API client."""
+    """Asynchronous VNDB Kana API client.
+
+    The async counterpart of :class:`Client`. It exposes the same entity query
+    resources and helpers, but ``query`` and the write/GET methods are
+    coroutines. Use it as an async context manager so the connection pool is
+    closed on exit.
+
+    Example:
+        >>> import asyncio
+        >>> from vndb_client import AsyncClient
+        >>> async def main() -> str:
+        ...     async with AsyncClient() as client:
+        ...         page = await client.vn.query(filters=["id", "=", "v17"])
+        ...         return page.results[0].title
+        >>> asyncio.run(main())
+        'Ever17 -the out of infinity-'
+
+    Attributes:
+        vn: Query resource for visual novels (``/vn``).
+        release: Query resource for releases (``/release``).
+        producer: Query resource for producers (``/producer``).
+        character: Query resource for characters (``/character``).
+        staff: Query resource for staff (``/staff``).
+        tag: Query resource for tags (``/tag``).
+        trait: Query resource for traits (``/trait``).
+        quote: Query resource for quotes (``/quote``).
+        ulist: Query resource for user-list entries (``/ulist``).
+    """
 
     def __init__(
         self,
@@ -227,6 +304,26 @@ class AsyncClient:
         cache_ttl: float | None = None,
         cache_maxsize: int = 128,
     ) -> None:
+        """Create an asynchronous client.
+
+        Args:
+            token: VNDB API token for authenticated requests. Omit for
+                read-only access.
+            base_url: API base URL. Defaults to production
+                (``https://api.vndb.org/kana``); use ``SANDBOX_BASE_URL`` to
+                target the sandbox.
+            timeout: Per-request timeout in seconds.
+            user_agent: ``User-Agent`` header sent with every request.
+            retry: Retry policy for transient failures. ``None`` uses the
+                default :class:`~vndb_client.config.RetryConfig`.
+            http_client: An existing ``httpx.AsyncClient`` to reuse. When
+                provided, its lifecycle is the caller's responsibility.
+            cache_ttl: Time-to-live in seconds for the in-memory read cache.
+                ``None`` (or a non-positive value) disables caching; reads are
+                not cached by default.
+            cache_maxsize: Maximum number of cached read responses before
+                least-recently-used eviction. Only used when ``cache_ttl`` is set.
+        """
         self._transport = AsyncTransport(
             token=token,
             base_url=base_url,

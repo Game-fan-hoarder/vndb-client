@@ -15,6 +15,61 @@ client.vn.query(
 )
 ```
 
+## Fetch one entity by id
+
+A by-id lookup is just a `query()` with an `id` equality filter. Every entity
+id is a string with its type prefix (`v` for VNs, `r` for releases, `c` for
+characters, …), e.g. `"v17"`:
+
+```python
+from vndb_client import Client
+
+with Client() as client:
+    page = client.vn.query(filters=["id", "=", "v17"])
+    vn = page.results[0]
+    print(vn.title)        # 'Ever17 -the out of infinity-'
+    print(vn.rating)       # 84.3
+    print(vn.released)     # '2002-08-29'
+    print(vn.languages)    # ['en', 'ja', 'zh-Hans', ...]
+```
+
+### What you get back
+
+`query()` always returns a `Page[VN]` envelope — even for a single id. Its
+fields are:
+
+| Field                | Type             | Meaning                                              |
+| -------------------- | ---------------- | ---------------------------------------------------- |
+| `results`            | `list[VN]`       | The matched models. Empty if the id does not exist.  |
+| `more`               | `bool`           | Whether further pages exist (always `False` by id).  |
+| `count`              | `int \| None`    | Total match count; populated only when `count=True`. |
+| `compact_filters`    | `str \| None`    | Echoed compact filter string when requested.         |
+| `normalized_filters` | `list \| None`   | Echoed normalised filter list when requested.        |
+
+An unknown id is **not** an error — it returns an empty `results` list, so guard
+with `page.results[0] if page.results else None`.
+
+Each `VN` in `results` is a typed Pydantic model. The fields requested by
+default include:
+
+| Field                                | Type                | Notes                                  |
+| ------------------------------------ | ------------------- | -------------------------------------- |
+| `id`                                 | `str`               | Always present, e.g. `"v17"`.          |
+| `title`                              | `str \| None`       | Main title in its original language.   |
+| `alttitle`                           | `str \| None`       | Alternative (romanised) title.         |
+| `titles`                             | `list[Title] \| None` | Per-language titles.                 |
+| `aliases`                            | `list[str] \| None` | Known aliases.                         |
+| `released`                           | `str \| None`       | Release date `YYYY-MM-DD`.             |
+| `languages` / `platforms`            | `list[str] \| None` | Language and platform codes.           |
+| `rating` / `average`                 | `float \| None`     | Bayesian rating / raw average (10–100).|
+| `votecount`                          | `int \| None`       | Number of votes.                       |
+| `length` / `length_minutes`          | `int \| None`       | Length bucket / play time in minutes.  |
+| `description`                        | `str \| None`       | Description (may contain BBCode).      |
+| `image`                              | `Image \| None`     | Cover image metadata.                  |
+
+Pass `fields` to fetch more (e.g. nested relations); see below. Unknown keys in
+the response are ignored, so a narrower or wider `fields` selection never raises.
+
 ## Fields
 
 By default the client requests the fields its model declares. Pass `fields` to

@@ -1,11 +1,11 @@
 site_name: vndb-client
-repo_url: https://github.com/HOZHENWAI/vndb-client
-site_url: https://HOZHENWAI.github.io/vndb-client
+repo_url: https://github.com/Game-fan-hoarder/vndb-client
+site_url: https://game-fan-hoarder.github.io/vndb-client
 site_description: Http based Vndb Client.
-site_author: Olivier HO
+site_author: HOZHENWAI
 edit_uri: edit/main/docs/
-repo_name: HOZHENWAI/vndb-client
-copyright: Maintained by <a href="https://HOZHENWAI.com">HOZHENWAI</a>.
+repo_name: Game-fan-hoarder/vndb-client
+copyright: Maintained by <a href="https://github.com/Game-fan-hoarder">HOZHENWAI</a>.
 
 # Keep internal design docs / feature maps / plans out of the published site.
 exclude_docs: |
@@ -36,10 +36,30 @@ plugins:
       handlers:
         python:
           paths: ["src/vndb_client"]
+          options:
+            docstring_style: google
+            docstring_section_style: table
+            merge_init_into_class: true
+            show_signature_annotations: true
+            separate_signature: true
+            signature_crossrefs: true
+            members_order: source
+            show_root_heading: true
+            show_root_full_path: false
+            show_symbol_type_heading: true
+            show_symbol_type_toc: true
+            show_if_no_docstring: false
+            show_source: false
+            filters: ["!^_"]
 theme:
   name: material
-  feature:
-    tabs: true
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - toc.follow
+    - content.code.copy
+    - search.suggest
   palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default
@@ -61,7 +81,7 @@ theme:
 extra:
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/HOZHENWAI/vndb-client
+      link: https://github.com/Game-fan-hoarder/vndb-client
     - icon: fontawesome/brands/python
       link: https://pypi.org/project/vndb-client
 

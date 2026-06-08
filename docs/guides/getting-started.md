@@ -26,6 +26,35 @@ with Client() as client:
 `page.results` is a list of typed models; `page.more` tells you whether another
 page exists; `page.count` is populated when you pass `count=True`.
 
+## Fetch a single VN by id
+
+There is no dedicated `get(id)` method — the VNDB API models a by-id lookup as
+a filter on the `id` field. Query with an `id` equality filter and take the
+first result:
+
+```python
+from vndb_client import Client
+
+with Client() as client:
+    page = client.vn.query(filters=["id", "=", "v17"])
+    vn = page.results[0] if page.results else None
+    if vn is not None:
+        print(vn.id, vn.title, vn.rating)  # v17 Ever17 -the out of infinity- 84.3
+```
+
+The same works with the typed filter DSL:
+
+```python
+from vndb_client import Client
+from vndb_client.filters import vn_filters
+
+with Client() as client:
+    page = client.vn.query(filters=(vn_filters.id == "v17"))
+```
+
+See [Querying](querying.md#fetch-one-entity-by-id) for the exact shape of the
+returned data.
+
 ## Sync vs async
 
 Every synchronous call has an asynchronous twin on `AsyncClient`:

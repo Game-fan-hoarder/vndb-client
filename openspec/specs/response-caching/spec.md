@@ -59,4 +59,3 @@ least-recently-used entries beyond the bound.
 #### Scenario: Bounded by maxsize
 - **WHEN** more distinct reads are cached than `cache_maxsize`
 - **THEN** the least-recently-used entries are evicted to stay within the bound
-

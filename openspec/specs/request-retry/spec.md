@@ -63,4 +63,3 @@ a cap. The sleep mechanism SHALL be patchable so tests do not wait in real time.
 - **WHEN** a retryable response has no `Retry-After` header
 - **THEN** the client waits for an exponentially increasing, capped delay before
   retrying
-

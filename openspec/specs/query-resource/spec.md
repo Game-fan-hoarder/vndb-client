@@ -77,4 +77,3 @@ field set; when provided, it SHALL use the caller's value. Each of the
 
 - **WHEN** the asynchronous resource's `query()` is awaited
 - **THEN** it returns the same typed `Page` as the synchronous resource would
-

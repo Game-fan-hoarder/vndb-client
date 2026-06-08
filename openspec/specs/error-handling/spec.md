@@ -40,4 +40,3 @@ the response's plain-text body rather than assuming a JSON body.
 - **WHEN** an httpx transport or timeout error occurs and retries are exhausted (or
   the error is non-retryable)
 - **THEN** the client raises the network-error type wrapping the original exception
-

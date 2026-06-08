@@ -67,4 +67,3 @@ test suite SHALL NOT perform this live call.
 #### Scenario: Runner passes when in sync
 - **WHEN** the runner is executed and there is no actionable drift
 - **THEN** it prints the report and exits zero
-

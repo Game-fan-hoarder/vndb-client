@@ -58,4 +58,3 @@ root.
 
 - **WHEN** importing from the package root
 - **THEN** `VN`, `Title`, `Image`, `DevStatus`, and `VNLength` are available
-

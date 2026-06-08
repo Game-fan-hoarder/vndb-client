@@ -107,4 +107,3 @@ form before the request is issued; a raw list SHALL be forwarded unchanged.
 
 - **WHEN** `query()` is called without `filters`
 - **THEN** no `filters` key is sent in the request body
-

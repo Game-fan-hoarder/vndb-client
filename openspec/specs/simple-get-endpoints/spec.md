@@ -87,4 +87,3 @@ the package root.
 
 - **WHEN** importing from `vndb_client`
 - **THEN** `Stats`, `AuthInfo`, `User`, and `UlistLabel` are available
-

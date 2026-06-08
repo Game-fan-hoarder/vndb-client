@@ -66,4 +66,3 @@ query to a given endpoint with the standard VNDB body parameters and returns a t
 - **WHEN** the generic query primitive is called with `filters`, `fields`, `sort`,
   `reverse`, `results`, `page`, and `count` values
 - **THEN** the POST request body contains those parameters as defined by the VNDB API
-

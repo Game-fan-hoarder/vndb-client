@@ -71,4 +71,3 @@ release. The build SHALL succeed locally via `uv build`.
 - **WHEN** `uv build` is run locally
 - **THEN** it produces a valid sdist and wheel, and the release workflow's
   build/publish/deploy steps are confirmed consistent with this packaging
-

@@ -76,4 +76,3 @@ The project SHALL maintain a `CHANGELOG.md` in Keep a Changelog format with a
 - **WHEN** a reader opens `CHANGELOG.md`
 - **THEN** a `1.0.0` section lists the V1 capabilities (transport, entities,
   query builder / filter DSL, GET endpoints, user-list read and write)
-

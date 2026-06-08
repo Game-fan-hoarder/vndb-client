@@ -139,4 +139,3 @@ its model, defaulting `fields` to the model's derived set. All new models and
 
 - **WHEN** importing from the package root
 - **THEN** `Release`, `Producer`, `Character`, `Staff`, `Tag`, `Trait`, `Quote`, and `ImageBase` are available
-

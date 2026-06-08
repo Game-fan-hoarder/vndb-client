@@ -114,4 +114,3 @@ importable from the package root.
 
 - **WHEN** importing from `vndb_client`
 - **THEN** `UlistEntry`, `UlistEntryLabel`, `UlistVN`, `RListStatus`, and `UNSET` are available
-

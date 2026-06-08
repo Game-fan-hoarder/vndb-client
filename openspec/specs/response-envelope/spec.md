@@ -47,4 +47,3 @@ given model type without performing any network I/O.
 
 - **WHEN** the core parse function is given a JSON envelope dict and a model type
 - **THEN** it returns a `Page[T]` with parsed results and no network call occurs
-

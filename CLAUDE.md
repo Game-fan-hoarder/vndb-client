@@ -26,7 +26,7 @@ bd close <id>         # Complete work
 - Run `bd prime` for detailed command reference and session close protocol
 - Use `bd remember "insight"` for ALL persistent knowledge — search with `bd memories <keyword>`
 - Do NOT use the auto-memory file system (the `~/.claude-personal/.../memory/` directory) — ignore it entirely
-- **Issue ID prefix** must match the project `name` in `pyproject.toml` (`vndb-client`). 
+- **Issue ID prefix** must match the project `name` in `pyproject.toml` (`vndb-client`).
 
 ## Session Completion
 

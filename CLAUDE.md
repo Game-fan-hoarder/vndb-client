@@ -2,9 +2,6 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-`vndb-client` is an HTTP-based client for the [VNDB](https://vndb.org) (Visual Novel Database) API, packaged as an installable Python library. The project is in early scaffolding stage (generated from `osprey-oss/cookiecutter-uv`); `src/vndb_client/foo.py` is placeholder code to be replaced.
-
-
 <!-- BEGIN BEADS INTEGRATION v:1 profile:minimal hash:ca08a54f -->
 ## Beads Issue Tracker
 

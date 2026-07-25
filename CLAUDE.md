@@ -29,6 +29,18 @@ bd close <id>         # Complete work
 - Use `bd remember "insight"` for ALL persistent knowledge — search with `bd memories <keyword>`
 - Do NOT use the auto-memory file system (the `~/.claude-personal/.../memory/` directory) — ignore it entirely
 - **Issue ID prefix** must match the project `name` in `pyproject.toml` (`vndb-client`).
+- **Memories are shared across machines, not local.** `.beads/embeddeddolt` is gitignored but `.beads/issues.jsonl` is tracked, and `bd import` round-trips issues *and* memories. So a memory may contain only facts true in **any clone on any machine**: repo structure, toolchain behaviour, project conventions. Machine-local facts (paths under `~`, agent-sandbox quirks, which optional tools happen to be installed) go in `CLAUDE.local.md`, which is gitignored — never in a memory, where they read as truth on the other machine.
+
+### Multi-machine sync
+
+This repo is worked on from more than one machine. `issues.jsonl` is the only transport: the Dolt DB itself never leaves the machine, and `bd dolt push` is a no-op here (no Dolt remote configured).
+
+Auto-import on `git pull` depends on `git config core.hooksPath` pointing at `.beads/hooks`. **That setting is `--local` and therefore NOT tracked by git**, so it is per-clone and can silently be absent on a fresh clone.
+
+- On any new clone, before running `bd`: check `bd hooks list` (expect all five ✓). If not, run `bd hooks install`.
+- **After `git pull`, confirm the import happened** — compare `bd stats` against the pulled `issues.jsonl`. If the hook did not fire, run `bd import` manually.
+- **Never commit `issues.jsonl` exported from a stale DB.** If a pull was not imported, this machine's next `bd` write exports from its old state, and committing that deletes the other machine's issues. Import first, then work.
+- On an `issues.jsonl` merge conflict, do not hand-merge: take either side, then `bd import` the other side's version to upsert the missing records.
 
 ## Session Completion
 
@@ -48,7 +60,7 @@ Before the first tool call, say in one sentence what you're about to do. While w
 
 ## Superpowers overrides (Opus 5)
 
-Superpowers 6.2.0 predates Opus 5 and its verification scaffolding now causes over-verification. These overrides take precedence over the skills' own text. Cross-project migration notes: `~/.claude/opus-5-workflow-migration.md`.
+Superpowers 6.2.0 predates Opus 5 and its verification scaffolding now causes over-verification. These overrides take precedence over the skills' own text, and are the authority — do not edit the version-pinned plugin cache to apply them, it is overwritten on plugin update.
 
 - **Do not invoke `superpowers:verification-before-completion`.** Verify your own work directly and once — run `make check` / `make test`, read the output, report what it said. The skill's "Iron Law" and rationalization tables are scaffolding for models that skipped verification.
 - **`superpowers:subagent-driven-development`: skip the per-task reviewer subagent and the per-task fix loop.** Keep the ledger (it survives compaction) and keep the single whole-branch review at Workflow 2 step 9. Never dispatch a subagent to check work you just did yourself.

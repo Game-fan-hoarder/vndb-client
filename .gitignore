@@ -213,3 +213,6 @@ marimo/_static/
 marimo/_lsp/
 __marimo__/
 .idea
+
+# Machine-local agent notes (per-workstation; never shared via beads memories)
+CLAUDE.local.md

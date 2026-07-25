@@ -103,7 +103,7 @@ Use for targeted bugfixes where a spec is overkill but the change is non-trivial
 1. **Debug** — `/superpowers:systematic-debugging` to investigate root cause and scope
 2. **Create Beads issue** — `bd create --type=bug` with reproduction steps and expected behavior
 3. **Isolate workspace** — `/superpowers:using-git-worktrees`
-4. **Implement** —[ direct edit, with a regression test that fails before the fix]()
+4. **Implement** — direct edit, with a regression test that fails before the fix
 5. **Verify** — run tests; confirm bug is gone and no regressions
 6. **Code review** — `/code-review` before merging
 7. **Finish branch** — `/superpowers:finishing-a-development-branch`

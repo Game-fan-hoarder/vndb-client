@@ -5,50 +5,34 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 <!-- BEGIN BEADS INTEGRATION v:1 profile:minimal hash:ca08a54f -->
 ## Beads Issue Tracker
 
-This project uses **bd (beads)** for issue tracking. Run `bd prime` to see full workflow context and commands.
-
-### Quick Reference
-
-```bash
-bd ready              # Find available work
-bd show <id>          # View issue details
-bd update <id> --claim  # Claim work
-bd close <id>         # Complete work
-```
+Issue tracking is **bd (beads)**. The `bd prime` SessionStart hook already injects the command
+reference, the close protocol, and every stored memory — so this file carries only what that
+output lacks or gets wrong.
 <!-- END BEADS INTEGRATION -->
 
-<!-- Project-specific beads rules. Deliberately OUTSIDE the BEADS INTEGRATION
-     markers above: `bd setup claude` owns everything between those markers and
-     may rewrite it wholesale, which would silently drop these rules. -->
+<!-- Rules below are deliberately OUTSIDE the markers above: `bd setup claude` owns
+     everything between them and may rewrite it wholesale. -->
 
 ## Beads Rules (project)
 
-- Use `bd` for ALL task tracking — do NOT use TodoWrite, TaskCreate, or markdown TODO lists
 - Create beads tasks AFTER `/opsx:propose` produces the delta spec — never before; tasks must mirror the spec's `tasks.md`
-- Run `bd prime` for detailed command reference and session close protocol
-- Use `bd remember "insight"` for ALL persistent knowledge — search with `bd memories <keyword>`
-- Do NOT use the auto-memory file system (the `~/.claude-personal/.../memory/` directory) — ignore it entirely
-- **Issue ID prefix** must match the project `name` in `pyproject.toml` (`vndb-client`).
-- **Memories are shared across machines, not local.** `.beads/embeddeddolt` is gitignored but `.beads/issues.jsonl` is tracked, and `bd import` round-trips issues *and* memories. So a memory may contain only facts true in **any clone on any machine**: repo structure, toolchain behaviour, project conventions. Machine-local facts (paths under `~`, agent-sandbox quirks, which optional tools happen to be installed) go in `CLAUDE.local.md`, which is gitignored — never in a memory, where they read as truth on the other machine.
+- **Issue ID prefix** must match the project `name` in `pyproject.toml` (`vndb-client`)
+- Ignore the auto-memory file system (`~/.claude-personal/.../memory/`) entirely
+- **Ignore `bd prime`'s tip to use parallel subagents for `bd create`** — batching a few calls
+  yourself is cheaper, and delegating contradicts the global CLAUDE.md
+- Machine-local facts go in gitignored `CLAUDE.local.md`, never in a memory (memories are shared
+  via `issues.jsonl`)
+- **`bd dolt push` is a no-op here** — no Dolt remote. What leaves this machine is the
+  `issues.jsonl` export, so at session close verify *that* is committed
 
 ### Multi-machine sync
 
-This repo is worked on from more than one machine. `issues.jsonl` is the only transport: the Dolt DB itself never leaves the machine, and `bd dolt push` is a no-op here (no Dolt remote configured).
+`issues.jsonl` is the only transport; the Dolt DB never leaves the machine. Auto-import on `git pull` depends on `git config core.hooksPath` pointing at `.beads/hooks` — **that is `--local` config, NOT tracked by git**, so a fresh clone can silently lack it.
 
-Auto-import on `git pull` depends on `git config core.hooksPath` pointing at `.beads/hooks`. **That setting is `--local` and therefore NOT tracked by git**, so it is per-clone and can silently be absent on a fresh clone.
-
-- On any new clone, before running `bd`: check `bd hooks list` (expect all five ✓). If not, run `bd hooks install`.
-- **After `git pull`, confirm the import happened** — compare `bd stats` against the pulled `issues.jsonl`. If the hook did not fire, run `bd import` manually.
-- **Never commit `issues.jsonl` exported from a stale DB.** If a pull was not imported, this machine's next `bd` write exports from its old state, and committing that deletes the other machine's issues. Import first, then work.
-- On an `issues.jsonl` merge conflict, do not hand-merge: take either side, then `bd import` the other side's version to upsert the missing records.
-
-## Session Completion
-
-1. **File issues for remaining work** — create issues for anything needing follow-up
-2. **Update issue status** — close finished work, update in-progress items
-3. **Push beads** — `bd dolt push` before finishing the branch
-
-> Git push is handled by `/superpowers:finishing-a-development-branch` (Workflow 2, step 10).
+- On a new clone, before any `bd` command: `bd hooks list` (expect five ✓), else `bd hooks install`
+- **After `git pull`, confirm the import happened** — compare `bd stats` to the pulled `issues.jsonl`; run `bd import` if the hook didn't fire
+- **Never commit `issues.jsonl` exported from a stale DB.** Without an import, this machine's next `bd` write exports its old state, and committing that deletes the other machine's issues
+- On an `issues.jsonl` conflict, don't hand-merge: take either side, then `bd import` the other
 
 ## Output calibration
 
@@ -110,7 +94,7 @@ Use for each individual feature once the epic exists.
 7. **Verify** — `/opsx:verify`
 8. **Archive spec** — `/opsx:archive`
 9. **Code review** — `/code-review` before merging. This is the single review gate; run it on opus.
-10. **Finish branch** — `/superpowers:finishing-a-development-branch` (handles git push for feature branches; satisfies the beads Session Completion protocol)
+10. **Finish branch** — `/superpowers:finishing-a-development-branch` (handles git push for feature branches; satisfies `bd prime`'s close protocol)
 
 ### Workflow 3: Explicit bugfix implementation
 

@@ -45,101 +45,71 @@ If you are proposing a new feature:
 # Get Started!
 
 Ready to contribute? Here's how to set up `vndb-client` for local development.
-Please note this documentation assumes you already have `uv` and `Git` installed and ready to go.
+This assumes you already have `git` and [`uv`](https://docs.astral.sh/uv/) installed. The project
+targets Python 3.10–3.14; `uv` will fetch a suitable interpreter for you.
 
-1. Fork the `vndb-client` repo on GitHub.
-
-2. Clone your fork locally:
+1. Fork the `vndb-client` repo on GitHub, then clone your fork:
 
 ```bash
-cd <directory_in_which_repo_should_be_created>
 git clone git@github.com:YOUR_NAME/vndb-client.git
-```
-
-3. Now we need to install the environment. Navigate into the directory
-
-```bash
 cd vndb-client
 ```
 
-Then, install and activate the environment with:
+2. Set up the environment and the commit-time linters:
 
 ```bash
-uv sync
+make install
 ```
 
-4. Install the commit-time linters/formatters. `make install` does this for you; the two
-   commands below are what it runs, and which one applies depends on whether you use the
-   [beads](https://github.com/steveyegge/beads) issue tracker.
+That runs `uv sync` and prepares the `pre-commit` hooks. There is no virtualenv to activate —
+every command below goes through `uv run`, which resolves the project environment for you.
 
-   **Without beads** — the normal case for outside contributors. Install the git hook:
-
-```bash
-uv run pre-commit install
-```
-
-**With beads** — `bd` points `core.hooksPath` at `.beads/hooks`, and `pre-commit install`
-refuses to run while that is set (it exits 1 with *"Cowardly refusing to install hooks with
-`core.hooksPath` set"*). Nothing is broken: the commit gate is already committed to
-`.beads/hooks/pre-commit`, so there is no hook to install and it works in every clone. You only
-need the hook environments pre-built:
-
-```bash
-uv run pre-commit install-hooks
-```
-
-Verify either way — the first command shows which mode you are in, the second proves the hooks
-work:
-
-```bash
-git config core.hooksPath          # empty = no beads; .beads/hooks = beads mode
-uv run pre-commit run --all-files
-```
-
-Note that `pre-commit run --all-files` is a one-off lint pass over the whole tree, not a setup
-step. It builds the environments as a side effect, which is why it is a useful check here.
-
-5. Create a branch for local development:
+3. Create a branch for your work:
 
 ```bash
 git checkout -b name-of-your-bugfix-or-feature
 ```
 
-Now you can make your changes locally.
+4. Make your changes, and add test cases for new functionality under `tests/`.
 
-6. Don't forget to add test cases for your added functionality to the `tests` directory.
-
-7. When you're done making changes, check that your changes pass the formatting tests.
+5. Run the quality gates:
 
 ```bash
-make check
+make check   # lock file, ruff lint + format, mypy, deptry
+make test    # pytest with coverage
 ```
 
-Now, validate that all unit tests are passing:
-
-```bash
-make test
-```
-
-9. Before raising a pull request you should also run tox.
-   This will run the tests across different versions of Python:
+6. Optionally run the suite across every supported Python version. This needs those versions
+   installed locally, and CI runs it anyway, so it is fine to skip:
 
 ```bash
 tox
 ```
 
-This requires you to have multiple versions of python installed.
-This step is also triggered in the CI/CD pipeline, so you could also choose to skip this step locally.
-
-10. Commit your changes and push your branch to GitHub:
+7. Commit and push. Stage files explicitly rather than with `git add .`, so build artefacts and
+   local scratch files don't end up in the PR:
 
 ```bash
-git add .
-git commit -m "Your detailed description of your changes."
+git add <the files you changed>
+git commit -m "A detailed description of your changes."
 git push origin name-of-your-bugfix-or-feature
 ```
 
-11. Submit a pull request through the GitHub website.
+Commits are lint-gated. If a hook reformats a file, the commit is rejected on purpose — re-stage
+the now-fixed file and commit again.
+
+8. Open a pull request through the GitHub website.
+
+## Troubleshooting setup
+
+**`pre-commit install` fails with "Cowardly refusing to install hooks with `core.hooksPath` set".**
+Something else owns your git hooks — in this repo that is the maintainers' issue tracker, which
+points `core.hooksPath` at `.beads/hooks`. You do not need to fix it: the lint gate is committed
+to that directory and already active. Run `uv run pre-commit install-hooks` to pre-build the hook
+environments instead. `git config core.hooksPath` tells you which mode you are in.
+
+**The hooks never seem to run.** Confirm with a deliberate violation rather than by inspecting
+config: make a badly formatted change, try to commit it, and check the commit is refused.
 
 # Pull Request Guidelines
 
@@ -149,3 +119,6 @@ Before you submit a pull request, check that it meets these guidelines:
 
 2. If the pull request adds functionality, the docs should be updated.
    Put your new functionality into a function with a docstring, and add the feature to the list in `README.md`.
+
+3. `make check` and `make test` should pass. CI runs the same gates across all supported Python
+   versions.

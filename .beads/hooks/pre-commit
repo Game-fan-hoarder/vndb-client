@@ -22,3 +22,16 @@ if command -v bd >/dev/null 2>&1; then
   if [ $_bd_exit -ne 0 ]; then exit $_bd_exit; fi
 fi
 # --- END BEADS INTEGRATION v1.0.3 ---
+
+# --- pre-commit framework (user content; preserved across `bd hooks install`) ---
+# The Python pre-commit framework cannot install its own hook here: beads owns
+# core.hooksPath, and `pre-commit install` refuses to run while that is set.
+# Invoking it from this file is the supported way to gate ruff. See vndb-client-i6n.
+if command -v uv >/dev/null 2>&1; then
+  uv run pre-commit run
+  _pc_exit=$?
+  if [ $_pc_exit -ne 0 ]; then
+    echo >&2 "pre-commit failed — fix or re-stage the auto-fixed files, then commit again"
+    exit $_pc_exit
+  fi
+fi

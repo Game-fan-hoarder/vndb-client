@@ -68,11 +68,36 @@ Then, install and activate the environment with:
 uv sync
 ```
 
-4. Install pre-commit to run linters/formatters at commit time:
+4. Install the commit-time linters/formatters. `make install` does this for you; the two
+   commands below are what it runs, and which one applies depends on whether you use the
+   [beads](https://github.com/steveyegge/beads) issue tracker.
+
+   **Without beads** — the normal case for outside contributors. Install the git hook:
 
 ```bash
 uv run pre-commit install
 ```
+
+**With beads** — `bd` points `core.hooksPath` at `.beads/hooks`, and `pre-commit install`
+refuses to run while that is set (it exits 1 with *"Cowardly refusing to install hooks with
+`core.hooksPath` set"*). Nothing is broken: the commit gate is already committed to
+`.beads/hooks/pre-commit`, so there is no hook to install and it works in every clone. You only
+need the hook environments pre-built:
+
+```bash
+uv run pre-commit install-hooks
+```
+
+Verify either way — the first command shows which mode you are in, the second proves the hooks
+work:
+
+```bash
+git config core.hooksPath          # empty = no beads; .beads/hooks = beads mode
+uv run pre-commit run --all-files
+```
+
+Note that `pre-commit run --all-files` is a one-off lint pass over the whole tree, not a setup
+step. It builds the environments as a side effect, which is why it is a useful check here.
 
 5. Create a branch for local development:
 

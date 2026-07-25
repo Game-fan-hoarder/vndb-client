@@ -1,8 +1,20 @@
+# Non-empty when beads (or anything else) has redirected git hooks away from
+# .git/hooks. `pre-commit install` refuses to run while this is set.
+HOOKSPATH := $(shell git config core.hooksPath)
+
 .PHONY: install
-install: ## Install the virtual environment and install the pre-commit hooks
+install: ## Install the virtual environment and the commit-time linters
 	@echo "🚀 Creating virtual environment using uv"
 	@uv sync
+	@echo "🚀 Pre-building pre-commit hook environments"
+	@uv run pre-commit install-hooks
+ifeq ($(strip $(HOOKSPATH)),)
+	@echo "🚀 Installing the git pre-commit hook"
 	@uv run pre-commit install
+else
+	@echo "🚀 Git hook: beads owns core.hooksPath ($(HOOKSPATH))"
+	@echo "   The commit gate is already tracked in .beads/hooks/pre-commit — nothing to install."
+endif
 
 .PHONY: check
 check: ## Run code quality tools.

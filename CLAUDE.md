@@ -141,7 +141,7 @@ Use for small tasks that don't warrant a feature workflow or bugfix investigatio
 This project uses **uv** for environment/dependency management. All tooling runs through `uv run`. A `Makefile` wraps the common workflows:
 
 ```bash
-make install      # uv sync + install pre-commit hooks
+make install      # uv sync + pre-build pre-commit envs (+ install the git hook, if beads doesn't own core.hooksPath)
 make check        # lock-file check, pre-commit (ruff), mypy, deptry — run before committing
 make test         # pytest with coverage (writes coverage.xml)
 make build        # build wheel via hatchling

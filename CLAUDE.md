@@ -60,7 +60,9 @@ Before the first tool call, say in one sentence what you're about to do. While w
 
 ## Superpowers overrides (Opus 5)
 
-Superpowers 6.2.0 predates Opus 5 and its verification scaffolding now causes over-verification. These overrides take precedence over the skills' own text, and are the authority — do not edit the version-pinned plugin cache to apply them, it is overwritten on plugin update.
+Superpowers' verification and delegation scaffolding was written for models that skipped verification and under-delegated; on Opus 5 it causes over-verification and needless subagent spawning. These overrides take precedence over the skills' own text and are the authority. Never edit the plugin cache to apply them — it is version-pinned and overwritten on plugin update.
+
+**These overrides are keyed to what the skills say, not to a plugin version.** If an update rewords or drops a clause, the matching override simply stops having anything to act on. Do not treat a plugin update as repealing them, and do not treat a version number here as their expiry date — check the skill text.
 
 - **Do not invoke `superpowers:verification-before-completion`.** Verify your own work directly and once — run `make check` / `make test`, read the output, report what it said. The skill's "Iron Law" and rationalization tables are scaffolding for models that skipped verification.
 - **`superpowers:subagent-driven-development`: skip the per-task reviewer subagent and the per-task fix loop.** Keep the ledger (it survives compaction) and keep the single whole-branch review at Workflow 2 step 9. Never dispatch a subagent to check work you just did yourself.

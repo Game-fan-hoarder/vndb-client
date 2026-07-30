@@ -8,7 +8,7 @@
 
 **Tech Stack:** Python 3.10+, Pydantic v2 (`model_fields`/`FieldInfo.alias`), dataclasses; pytest; ruff; mypy (strict); uv.
 
-**Source of truth:** approved design `docs/2026-06-06_schema_drift_design.md`; delta spec `openspec/changes/schema-drift-detection/specs/schema-drift-detection/spec.md`.
+**Source of truth:** approved design `design/2026-06-06_schema_drift_design.md`; delta spec `openspec/changes/schema-drift-detection/specs/schema-drift-detection/spec.md`.
 
 **Worktree note:** pre-commit hooks are NOT installed in this worktree. Before each commit run `uv run ruff format .` and `uv run ruff check --fix .` and re-stage.
 

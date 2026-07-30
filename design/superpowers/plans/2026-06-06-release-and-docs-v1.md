@@ -8,7 +8,7 @@
 
 **Tech Stack:** mkdocs + mkdocs-material + mkdostrings[python]; hatchling build; uv; pytest-cov; ruff; mypy; deptry.
 
-**Source of truth:** approved design `docs/2026-06-06_release_and_docs_design.md`; delta spec `openspec/changes/release-and-docs-v1/specs/{documentation,release-packaging}/spec.md`.
+**Source of truth:** approved design `design/2026-06-06_release_and_docs_design.md`; delta spec `openspec/changes/release-and-docs-v1/specs/{documentation,release-packaging}/spec.md`.
 
 **Worktree note:** pre-commit hooks are NOT installed in this worktree. Before every commit, run `uv run ruff format .` and `uv run ruff check --fix .` and re-stage. Markdown is not linted by ruff, but `pyproject.toml` is (formatting/TOML validity).
 

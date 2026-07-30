@@ -4,7 +4,7 @@ The `QueryResource`/`AsyncQueryResource` (from VN) accept `filters` as a raw
 nested list — VNDB's DSL: `[field, op, value]` predicates, `["and"|"or", …]`
 compounds, operators `=`/`!=`/`>=`/`>`/`<=`/`<`, and nested relational filters
 (a predicate value may be a sub-filter). This change adds a fluent builder that
-produces that form. Full brainstorm: `docs/2026-06-06_query_builder_design.md`.
+produces that form. Full brainstorm: `design/2026-06-06_query_builder_design.md`.
 Per-entity filterable field sets come from the VNDB Kana API docs.
 
 ## Goals / Non-Goals

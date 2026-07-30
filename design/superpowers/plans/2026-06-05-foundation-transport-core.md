@@ -8,7 +8,7 @@
 
 **Tech Stack:** Python 3.10–3.14, httpx, Pydantic v2, pytest (async via `asyncio.run`, no extra plugin), uv, Ruff, mypy (strict).
 
-**Spec:** `openspec/changes/foundation-transport-core/` (proposal, design, specs, tasks). **Design:** `docs/2026-06-05_foundation_design.md`.
+**Spec:** `openspec/changes/foundation-transport-core/` (proposal, design, specs, tasks). **Design:** `design/2026-06-05_foundation_design.md`.
 
 **Conventions for every commit in this plan:**
 - Run from the worktree root: `C:\Users\ml-na\PycharmProjects\personal\vndb-client\.worktrees\foundation-transport-core`.

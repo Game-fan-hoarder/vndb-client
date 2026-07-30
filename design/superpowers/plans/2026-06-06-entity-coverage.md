@@ -8,7 +8,7 @@
 
 **Tech Stack:** Python 3.10–3.14, httpx, Pydantic v2, pytest (async via `asyncio.run`), uv, Ruff, mypy (strict).
 
-**Spec:** `openspec/changes/entity-coverage/` (capability `entity-coverage`). **Design:** `docs/2026-06-06_entity_coverage_design.md`. **Reuses:** `VndbModel` (`models.py`), `field_spec` (`fields.py`), `QueryResource`/`AsyncQueryResource` (`resource.py`), the `client.vn` wiring pattern.
+**Spec:** `openspec/changes/entity-coverage/` (capability `entity-coverage`). **Design:** `design/2026-06-06_entity_coverage_design.md`. **Reuses:** `VndbModel` (`models.py`), `field_spec` (`fields.py`), `QueryResource`/`AsyncQueryResource` (`resource.py`), the `client.vn` wiring pattern.
 
 **Conventions for every commit:**
 - Run from the worktree root `C:\Users\ml-na\PycharmProjects\personal\vndb-client\.worktrees\entity-coverage`; use `uv run ...`.

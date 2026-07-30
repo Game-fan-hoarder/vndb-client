@@ -4,7 +4,7 @@ VNDB's `/query` echoes filters back as `compact_filters` (opaque server-encoded
 string) and `normalized_filters` (explicit nested list) when the request asks.
 `Page` parses both, but `query()`/`build_query_request` lack the request flags
 and `filters` is not typed to accept a compact string. The full approved design
-is at `docs/2026-06-06_filter_round_tripping_design.md`; this records decisions.
+is at `design/2026-06-06_filter_round_tripping_design.md`; this records decisions.
 
 ## Goals / Non-Goals
 

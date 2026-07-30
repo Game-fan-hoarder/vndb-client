@@ -63,7 +63,7 @@ Use when starting a new product or defining major scope.
 
 1. **Brainstorm vision** — `/superpowers:brainstorming`; Claude asks "what does done look like?", surfaces constraints and goals
 2. **Define feature map** — second brainstorm refines into feature areas (MVP / Beta / V1) with dependency map
-3. **Save brainstorm docs** to `docs/`:
+3. **Save brainstorm docs** to `design/`:
    - Vision doc: `YYYY-MM-DD_<major_scope>.md`
    - Feature map: `YYYY-MM-DD_<major_scope>_feature_map.md`
 4. **Create Beads epics** — one epic per feature area, with description and sub-epic for each major feature.
@@ -74,7 +74,7 @@ Use when starting a new product or defining major scope.
 
 Use for each individual feature once the epic exists.
 
-1. **Brainstorm** — `/superpowers:brainstorming` to surface unknowns; produces a design document saved to `docs/YYYY-MM-DD_<feature_name>_design.md`
+1. **Brainstorm** — `/superpowers:brainstorming` to surface unknowns; produces a design document saved to `design/YYYY-MM-DD_<feature_name>_design.md`
 
    > **Transition after brainstorm:** The next step is ALWAYS `/opsx:propose` — prompt the user to run it. Never suggest `writing-plans` here. The brainstorming skill's terminal state says otherwise but it is WRONG for this project.
 
@@ -149,7 +149,7 @@ tox                                               # run the suite across Python 
 
 ## Architecture & Conventions
 
-- **Layout:** `src/` layout. The package is `src/vndb_client/` (the wheel target). Tests live in `tests/`. Docs are MkDocs Material sources under `docs/` with API pages auto-generated via `mkdocstrings`.
+- **Layout:** `src/` layout. The package is `src/vndb_client/` (the wheel target). Tests live in `tests/`. Docs are MkDocs Material sources under `docs/` with API pages auto-generated via `mkdocstrings` — `docs/` is **published to GitHub Pages, so it holds only public pages**. Internal design docs, feature maps and implementation plans go in the top-level `design/` (never in `docs/`, which is why `mkdocs.yml` needs no filename-based exclusion).
 - **Target Python:** 3.10–3.14. Code must remain compatible across all of these (enforced by `tox`).
 - **Typing is strict:** mypy runs with `disallow_untyped_defs`, `disallow_any_unimported`, `no_implicit_optional`, and `warn_return_any`. All functions need full type annotations.
 - **Lint/format via Ruff:** line length 120, `target-version = py310`, `fix = true`. An extensive lint rule set is enabled (bandit `S`, bugbear `B`, comprehensions, simplify, isort, pyupgrade, tryceratops, etc.). `tests/*` is exempt from `S101` (asserts allowed). Format uses `preview = true`.

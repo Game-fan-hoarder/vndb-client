@@ -3,7 +3,7 @@
 Entity models (`VN`, `Release`, …) are hand-written Pydantic `VndbModel`
 subclasses whose field names (via `info.alias or name`) must match VNDB's API.
 `client.schema()` already returns the raw `/schema` document. The full approved
-design is at `docs/2026-06-06_schema_drift_design.md`; this records the technical
+design is at `design/2026-06-06_schema_drift_design.md`; this records the technical
 decisions.
 
 ## Goals / Non-Goals

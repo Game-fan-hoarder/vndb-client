@@ -4,7 +4,7 @@ The Foundation (archived `2026-06-05-foundation-transport-core`) gives us
 `Client`/`AsyncClient` with an internal generic `_query(endpoint, model,
 **params) -> Page[T]`, the `VndbModel` base, `Page[T]`, and the exception
 hierarchy. This change adds the first public, typed entity surface on top of
-that primitive. The full brainstorm is in `docs/2026-06-06_vn_flagship_design.md`.
+that primitive. The full brainstorm is in `design/2026-06-06_vn_flagship_design.md`.
 
 VNDB `/vn` constraints that shape the design: an explicit `fields` parameter is
 required (unrequested fields are omitted from the response); nested fields use

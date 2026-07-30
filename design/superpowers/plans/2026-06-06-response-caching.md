@@ -8,7 +8,7 @@
 
 **Tech Stack:** Python 3.10+, httpx, `collections.OrderedDict`, `time.monotonic`; pytest with httpx `MockTransport` and an injected fake clock.
 
-**Source of truth:** approved design `docs/2026-06-06_response_caching_design.md`; delta spec `openspec/changes/response-caching/specs/response-caching/spec.md`.
+**Source of truth:** approved design `design/2026-06-06_response_caching_design.md`; delta spec `openspec/changes/response-caching/specs/response-caching/spec.md`.
 
 **Worktree note:** pre-commit hooks are NOT installed here. Before each commit run `uv run ruff format .` and `uv run ruff check --fix .` and re-stage.
 

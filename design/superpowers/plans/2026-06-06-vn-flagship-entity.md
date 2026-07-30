@@ -8,7 +8,7 @@
 
 **Tech Stack:** Python 3.10–3.14, httpx, Pydantic v2, pytest (async via `asyncio.run`), uv, Ruff, mypy (strict).
 
-**Spec:** `openspec/changes/vn-flagship-entity/` (capabilities `query-resource`, `vn-entity`). **Design:** `docs/2026-06-06_vn_flagship_design.md`. **Foundation:** `Client`/`AsyncClient._query(endpoint, model, **params) -> Page[T]`, `VndbModel`, `Page[T]`.
+**Spec:** `openspec/changes/vn-flagship-entity/` (capabilities `query-resource`, `vn-entity`). **Design:** `design/2026-06-06_vn_flagship_design.md`. **Foundation:** `Client`/`AsyncClient._query(endpoint, model, **params) -> Page[T]`, `VndbModel`, `Page[T]`.
 
 **Conventions for every commit:**
 - Run from the worktree root `C:\Users\ml-na\PycharmProjects\personal\vndb-client\.worktrees\vn-flagship-entity`; use `uv run ...`.

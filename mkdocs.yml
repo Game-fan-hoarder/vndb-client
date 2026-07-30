@@ -7,10 +7,9 @@ edit_uri: edit/main/docs/
 repo_name: Game-fan-hoarder/vndb-client
 copyright: Maintained by <a href="https://github.com/Game-fan-hoarder">HOZHENWAI</a>.
 
-# Keep internal design docs / feature maps / plans out of the published site.
-exclude_docs: |
-  2026-*.md
-  superpowers/
+# `docs/` holds only published pages. Internal design docs, feature maps and
+# implementation plans live in the top-level `design/` directory, outside
+# `docs_dir`, so nothing here needs to exclude them by filename.
 
 nav:
   - Home: index.md

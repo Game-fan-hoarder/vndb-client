@@ -8,7 +8,7 @@
 
 **Tech Stack:** Python 3.10+, Pydantic v2, httpx; pytest with `httpx.MockTransport` for request-body capture.
 
-**Source of truth:** approved design `docs/2026-06-06_filter_round_tripping_design.md`; delta spec `openspec/changes/filter-round-tripping/specs/query-resource/spec.md` (MODIFIED "Generic query resource").
+**Source of truth:** approved design `design/2026-06-06_filter_round_tripping_design.md`; delta spec `openspec/changes/filter-round-tripping/specs/query-resource/spec.md` (MODIFIED "Generic query resource").
 
 **Worktree note:** pre-commit hooks are NOT installed here. Before each commit run `uv run ruff format .` and `uv run ruff check --fix .` and re-stage.
 

@@ -8,7 +8,7 @@
 
 **Tech Stack:** Python 3.10–3.14, Pydantic v2 (existing models), httpx, pytest, uv, Ruff, mypy (strict).
 
-**Spec:** `openspec/changes/query-builder/` (capability `query-builder`). **Design:** `docs/2026-06-06_query_builder_design.md`. **Reuses:** `QueryResource`/`AsyncQueryResource.query` (currently `filters: Any = None`).
+**Spec:** `openspec/changes/query-builder/` (capability `query-builder`). **Design:** `design/2026-06-06_query_builder_design.md`. **Reuses:** `QueryResource`/`AsyncQueryResource.query` (currently `filters: Any = None`).
 
 **Conventions for every commit:**
 - Run from the worktree root `C:\Users\ml-na\PycharmProjects\personal\vndb-client\.worktrees\query-builder`; use `uv run ...`.

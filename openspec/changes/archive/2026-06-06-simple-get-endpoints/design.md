@@ -5,7 +5,7 @@ The Foundation transport (`transport.send(RequestSpec)`) already supports GET vi
 `Authorization: Token` header applied. The clients only expose POST query
 resources so far. This change adds the 5 simple GET endpoints as direct client
 methods with typed models. Full brainstorm + verified field shapes:
-`docs/2026-06-06_simple_get_endpoints_design.md`.
+`design/2026-06-06_simple_get_endpoints_design.md`.
 
 ## Goals / Non-Goals
 

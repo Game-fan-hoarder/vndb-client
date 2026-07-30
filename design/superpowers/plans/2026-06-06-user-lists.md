@@ -8,7 +8,7 @@
 
 **Tech Stack:** Python 3.10–3.14, httpx, Pydantic v2, pytest, uv, Ruff, mypy (strict).
 
-**Spec:** `openspec/changes/user-lists/` (capability `user-lists`). **Design:** `docs/2026-06-06_user_lists_design.md`. **Reuses:** `QueryResource`/`AsyncQueryResource.query`, `core.RequestSpec`, `transport.send`, `VndbModel`.
+**Spec:** `openspec/changes/user-lists/` (capability `user-lists`). **Design:** `design/2026-06-06_user_lists_design.md`. **Reuses:** `QueryResource`/`AsyncQueryResource.query`, `core.RequestSpec`, `transport.send`, `VndbModel`.
 
 **Conventions for every commit:**
 - Run from the worktree root `C:\Users\ml-na\PycharmProjects\personal\vndb-client\.worktrees\user-lists`; use `uv run ...`.

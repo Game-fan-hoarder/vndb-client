@@ -3,7 +3,7 @@
 Reads flow through `SyncTransport.send` / `AsyncTransport.send`, which retry then
 return an `httpx.Response`; the client decodes via `core.decode_json`. Each
 transport is built per-`Client` with that client's token in its headers. The full
-approved design is at `docs/2026-06-06_response_caching_design.md`; this records
+approved design is at `design/2026-06-06_response_caching_design.md`; this records
 decisions.
 
 ## Goals / Non-Goals

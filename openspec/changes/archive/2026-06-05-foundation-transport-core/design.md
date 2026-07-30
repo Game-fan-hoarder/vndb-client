@@ -2,10 +2,10 @@
 
 `vndb-client` is a greenfield, fully-typed Python client for the VNDB Kana HTTP API
 (Python 3.10–3.14, strict mypy, Ruff). The vision
-(`docs/2026-06-05_full_api_client.md`) fixes the stack as `httpx` + Pydantic v2 with
+(`design/2026-06-05_full_api_client.md`) fixes the stack as `httpx` + Pydantic v2 with
 a sans-I/O core wrapped by thin sync and async clients. This change implements the
 Foundation epic (`vndb-client-sp7`): the HTTP plumbing all later epics build on. The
-full brainstorm is in `docs/2026-06-05_foundation_design.md`.
+full brainstorm is in `design/2026-06-05_foundation_design.md`.
 
 VNDB API constraints that shape the design: token auth via `Authorization: Token
 <token>`; rate limits (200 req/5 min, 1s exec/min, 3s timeout) returning HTTP 429;

@@ -8,7 +8,7 @@
 
 **Tech Stack:** Python 3.10–3.14, httpx, Pydantic v2, pytest, uv, Ruff, mypy (strict).
 
-**Spec:** `openspec/changes/simple-get-endpoints/` (capability `simple-get-endpoints`). **Design:** `docs/2026-06-06_simple_get_endpoints_design.md`. **Reuses:** `core.RequestSpec`, `transport.send`, `VndbModel`, `VndbParseError`.
+**Spec:** `openspec/changes/simple-get-endpoints/` (capability `simple-get-endpoints`). **Design:** `design/2026-06-06_simple_get_endpoints_design.md`. **Reuses:** `core.RequestSpec`, `transport.send`, `VndbModel`, `VndbParseError`.
 
 **Conventions for every commit:**
 - Run from the worktree root `C:\Users\ml-na\PycharmProjects\personal\vndb-client\.worktrees\simple-get-endpoints`; use `uv run ...`.

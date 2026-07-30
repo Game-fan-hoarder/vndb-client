@@ -3,7 +3,7 @@
 `vndb-client` has a complete behavioral surface at 96% coverage with 147 passing
 tests, but it is not publishable. This change is the V1 release-readiness cycle.
 The full approved brainstorm design lives at
-`docs/2026-06-06_release_and_docs_design.md`; this document records the technical
+`design/2026-06-06_release_and_docs_design.md`; this document records the technical
 decisions.
 
 Current state: README is cookiecutter boilerplate; docs are a badges-only

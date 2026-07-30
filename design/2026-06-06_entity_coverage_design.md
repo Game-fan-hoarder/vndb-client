@@ -5,7 +5,7 @@
 **Milestone:** Beta
 **Workflow:** 2 (Feature Implementation), step 1 — brainstorm/design
 **Next step:** `/opsx:propose` (delta spec) — NOT writing-plans
-**Builds on:** VN flagship (`docs/2026-06-06_vn_flagship_design.md`) — generic
+**Builds on:** VN flagship (`design/2026-06-06_vn_flagship_design.md`) — generic
 `QueryResource`/`AsyncQueryResource`, `field_spec`, `VndbModel`, `Page[T]`, and
 the `Image` sub-model.
 

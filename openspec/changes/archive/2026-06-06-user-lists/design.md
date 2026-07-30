@@ -4,7 +4,7 @@
 write endpoints (`PATCH`/`DELETE /ulist/<id>`, `/rlist/<id>`) are the first
 authenticated writes, returning `204 No Content`. The Foundation transport
 already handles arbitrary methods + json bodies + 204 (status < 400 → returns
-response). Full brainstorm + verified shapes: `docs/2026-06-06_user_lists_design.md`.
+response). Full brainstorm + verified shapes: `design/2026-06-06_user_lists_design.md`.
 
 ## Goals / Non-Goals
 

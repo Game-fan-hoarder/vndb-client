@@ -4,7 +4,7 @@ VN (archived `2026-06-06-vn-flagship-entity`) established the reusable
 `QueryResource`/`AsyncQueryResource`, `field_spec` model→fields derivation, and
 the `VndbModel` + nested-sub-model conventions. This change adds the 7 remaining
 query entities on that foundation. Full brainstorm:
-`docs/2026-06-06_entity_coverage_design.md`. Field sets are taken from the VNDB
+`design/2026-06-06_entity_coverage_design.md`. Field sets are taken from the VNDB
 Kana API's documented selectable response fields per endpoint.
 
 ## Goals / Non-Goals

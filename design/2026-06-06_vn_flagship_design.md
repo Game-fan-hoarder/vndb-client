@@ -5,7 +5,7 @@
 **Milestone:** MVP
 **Workflow:** 2 (Feature Implementation), step 1 — brainstorm/design
 **Next step:** `/opsx:propose` (delta spec) — NOT writing-plans
-**Builds on:** Foundation (`docs/2026-06-05_foundation_design.md`) — `Client`/`AsyncClient`
+**Builds on:** Foundation (`design/2026-06-05_foundation_design.md`) — `Client`/`AsyncClient`
 with internal generic `_query(endpoint, model, **params) -> Page[T]`, `VndbModel`,
 `Page[T]`, exception hierarchy.
 

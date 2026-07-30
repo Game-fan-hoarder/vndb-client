@@ -123,3 +123,54 @@ class RetryPolicy:
         else:
             delay = min(self.config.backoff_base * (2 ** (attempt - 1)), self.config.backoff_cap)
         return (True, delay)
+
+
+@dataclass(frozen=True)
+class PageWalk:
+    """Pure pagination decision: no I/O, no transport.
+
+    Owns the two questions a paginated walk has to answer — how much of a page
+    to keep, and whether to ask for another one — so the sync and async
+    generators contain only request-and-yield scaffolding.
+
+    In both methods ``yielded`` is the number of records this walk has already
+    emitted, and ``available`` is the record count the API returned for the
+    current page, *before* any truncation.
+
+    Args:
+        start_page: 1-based page number the walk begins at.
+        limit: Maximum number of records the walk may emit in total, or
+            ``None`` for an unbounded walk.
+
+    Raises:
+        ValueError: If ``start_page`` is below 1, or ``limit`` is not positive.
+    """
+
+    start_page: int = 1
+    limit: int | None = None
+
+    def __post_init__(self) -> None:
+        if self.start_page < 1:
+            msg = f"start_page must be >= 1, got {self.start_page}"
+            raise ValueError(msg)
+        if self.limit is not None and self.limit <= 0:
+            msg = f"limit must be positive, got {self.limit}"
+            raise ValueError(msg)
+
+    def take(self, yielded: int, available: int) -> int:
+        """Return how many of this page's records to keep within the record budget."""
+        if self.limit is None:
+            return available
+        return min(available, max(self.limit - yielded, 0))
+
+    def should_continue(self, *, more: bool, yielded: int, available: int) -> bool:
+        """Return whether to request another page.
+
+        Stops when the API reports no further pages, when the record budget is
+        spent, or when a page came back empty while still claiming more pages —
+        the last guard is what keeps a misreporting server from driving an
+        unbounded request loop.
+        """
+        if not more or available == 0:
+            return False
+        return self.limit is None or yielded < self.limit

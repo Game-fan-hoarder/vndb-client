@@ -9,6 +9,7 @@ import pytest
 from vndb_client.client import AsyncClient, Client
 from vndb_client.config import PROD_BASE_URL
 from vndb_client.entities.vn import VN
+from vndb_client.exceptions import VndbServerError
 from vndb_client.fields import field_spec
 from vndb_client.filters import vn_filters as VF
 from vndb_client.models import Page
@@ -263,3 +264,335 @@ def test_client_without_cache_queries_each_time():
         client.vn.query(filters=["search", "=", "ever"])
         client.vn.query(filters=["search", "=", "ever"])
     assert calls["n"] == 2
+
+
+# --- pagination: pages() / iterate() ---
+
+
+def _vns(start, n):
+    return [{"id": f"v{i}", "title": f"T{i}"} for i in range(start, start + n)]
+
+
+def _pager(page_map):
+    """Serve a canned response per requested page, recording every request body.
+
+    ``page_map`` maps a 1-based page number to a ``(results, more)`` pair, or to
+    an ``httpx.Response`` to simulate a failure for that page.
+    """
+    seen: list[dict] = []
+
+    def handler(request):
+        body = json.loads(request.content)
+        seen.append(body)
+        spec = page_map[body["page"]]
+        if isinstance(spec, httpx.Response):
+            return spec
+        results, more = spec
+        return httpx.Response(200, json={"results": results, "more": more, "count": 250})
+
+    return seen, handler
+
+
+def test_iterate_streams_records_across_pages():
+    seen, handler = _pager({1: (_vns(0, 2), True), 2: (_vns(2, 2), True), 3: (_vns(4, 1), False)})
+    with Client(http_client=_client(handler)) as client:
+        records = list(client.vn.iterate(filters=VF.rating >= 80))
+    assert [r.id for r in records] == ["v0", "v1", "v2", "v3", "v4"]
+    assert [body["page"] for body in seen] == [1, 2, 3]
+    assert all(isinstance(r, VN) for r in records)
+
+
+def test_pages_streams_envelopes():
+    _, handler = _pager({1: (_vns(0, 2), True), 2: (_vns(2, 1), False)})
+    with Client(http_client=_client(handler)) as client:
+        pages = list(client.vn.pages(count=True))
+    assert [len(p.results) for p in pages] == [2, 1]
+    assert [p.more for p in pages] == [True, False]
+    assert all(p.count == 250 for p in pages)
+    assert all(isinstance(p, Page) for p in pages)
+
+
+def test_pages_defaults_page_size_to_api_maximum():
+    seen, handler = _pager({1: (_vns(0, 1), False)})
+    with Client(http_client=_client(handler)) as client:
+        list(client.vn.pages())
+    assert seen[0]["results"] == 100
+
+
+def test_pages_honours_caller_page_size():
+    seen, handler = _pager({1: (_vns(0, 1), False)})
+    with Client(http_client=_client(handler)) as client:
+        list(client.vn.pages(results=25))
+    assert seen[0]["results"] == 25
+
+
+def test_pagination_methods_reject_page_parameter():
+    with Client(http_client=_client(lambda r: httpx.Response(200, json=VN_RESPONSE))) as client:
+        with pytest.raises(TypeError):
+            client.vn.pages(page=2)
+        with pytest.raises(TypeError):
+            client.vn.iterate(page=2)
+
+
+def test_pages_construction_issues_no_request():
+    seen, handler = _pager({1: (_vns(0, 1), False)})
+    with Client(http_client=_client(handler)) as client:
+        gen = client.vn.pages()
+        igen = client.vn.iterate()
+        assert seen == []
+        next(gen)
+        next(igen)
+    assert len(seen) == 2
+
+
+def test_limit_truncates_final_page_to_exact_record_total():
+    page_map = {1: (_vns(0, 100), True), 2: (_vns(100, 100), True), 3: (_vns(200, 100), True)}
+    seen, handler = _pager(page_map)
+    with Client(http_client=_client(handler)) as client:
+        pages = list(client.vn.pages(limit=250))
+    assert [len(p.results) for p in pages] == [100, 100, 50]
+    assert sum(len(p.results) for p in pages) == 250
+    assert [body["page"] for body in seen] == [1, 2, 3]
+
+
+def test_limit_applies_identically_to_iterate():
+    page_map = {1: (_vns(0, 100), True), 2: (_vns(100, 100), True), 3: (_vns(200, 100), True)}
+    _, handler = _pager(page_map)
+    with Client(http_client=_client(handler)) as client:
+        records = list(client.vn.iterate(limit=250))
+    assert len(records) == 250
+    assert records[-1].id == "v249"
+
+
+def test_truncated_page_preserves_api_more_flag():
+    _, handler = _pager({1: (_vns(0, 10), True)})
+    with Client(http_client=_client(handler)) as client:
+        pages = list(client.vn.pages(limit=4))
+    assert len(pages) == 1
+    assert len(pages[0].results) == 4
+    assert pages[0].more is True
+
+
+def test_limit_stops_exactly_on_page_boundary():
+    seen, handler = _pager({1: (_vns(0, 10), True), 2: (_vns(10, 10), True)})
+    with Client(http_client=_client(handler)) as client:
+        records = list(client.vn.iterate(results=10, limit=20))
+    assert len(records) == 20
+    assert [body["page"] for body in seen] == [1, 2]
+
+
+def test_start_page_resumes_walk():
+    seen, handler = _pager({137: (_vns(0, 3), False)})
+    with Client(http_client=_client(handler)) as client:
+        records = list(client.vn.iterate(start_page=137))
+    assert len(records) == 3
+    assert [body["page"] for body in seen] == [137]
+
+
+def test_empty_page_claiming_more_stops_walk():
+    seen, handler = _pager({1: ([], True)})
+    with Client(http_client=_client(handler)) as client:
+        pages = list(client.vn.pages())
+    assert [len(p.results) for p in pages] == [0]
+    assert len(seen) == 1
+
+
+@pytest.mark.parametrize(("kwargs", "match"), [({"limit": 0}, "limit"), ({"start_page": 0}, "start_page")])
+def test_invalid_bounds_raise_before_any_request(kwargs, match):
+    seen, handler = _pager({1: (_vns(0, 1), False)})
+    with Client(http_client=_client(handler)) as client:
+        with pytest.raises(ValueError, match=match):
+            client.vn.pages(**kwargs)
+        with pytest.raises(ValueError, match=match):
+            client.vn.iterate(**kwargs)
+    assert seen == []
+
+
+def test_request_failure_propagates_mid_walk():
+    page_map = {
+        1: (_vns(0, 2), True),
+        2: (_vns(2, 2), True),
+        3: httpx.Response(500, text="boom"),
+    }
+    _, handler = _pager(page_map)
+    seen_records = []
+    with Client(http_client=_client(handler)) as client, pytest.raises(VndbServerError):
+        for record in client.vn.iterate():
+            seen_records.append(record)
+    assert [r.id for r in seen_records] == ["v0", "v1", "v2", "v3"]
+
+
+# --- pagination: async mirrors ---
+
+
+def test_async_iterate_streams_records_across_pages():
+    seen, handler = _pager({1: (_vns(0, 2), True), 2: (_vns(2, 2), True), 3: (_vns(4, 1), False)})
+
+    async def scenario():
+        async with AsyncClient(http_client=_aclient(handler)) as client:
+            return [r async for r in client.vn.iterate(filters=VF.rating >= 80)]
+
+    records = asyncio.run(scenario())
+    assert [r.id for r in records] == ["v0", "v1", "v2", "v3", "v4"]
+    assert [body["page"] for body in seen] == [1, 2, 3]
+    assert all(isinstance(r, VN) for r in records)
+
+
+def test_async_pages_streams_envelopes():
+    _, handler = _pager({1: (_vns(0, 2), True), 2: (_vns(2, 1), False)})
+
+    async def scenario():
+        async with AsyncClient(http_client=_aclient(handler)) as client:
+            return [p async for p in client.vn.pages(count=True)]
+
+    pages = asyncio.run(scenario())
+    assert [len(p.results) for p in pages] == [2, 1]
+    assert [p.more for p in pages] == [True, False]
+    assert all(p.count == 250 for p in pages)
+
+
+def test_async_pages_defaults_page_size_to_api_maximum():
+    seen, handler = _pager({1: (_vns(0, 1), False)})
+
+    async def scenario():
+        async with AsyncClient(http_client=_aclient(handler)) as client:
+            return [p async for p in client.vn.pages()]
+
+    asyncio.run(scenario())
+    assert seen[0]["results"] == 100
+
+
+def test_async_pages_honours_caller_page_size():
+    seen, handler = _pager({1: (_vns(0, 1), False)})
+
+    async def scenario():
+        async with AsyncClient(http_client=_aclient(handler)) as client:
+            return [p async for p in client.vn.pages(results=25)]
+
+    asyncio.run(scenario())
+    assert seen[0]["results"] == 25
+
+
+def test_async_pagination_methods_reject_page_parameter():
+    async def scenario():
+        async with AsyncClient(http_client=_aclient(lambda r: httpx.Response(200, json=VN_RESPONSE))) as client:
+            with pytest.raises(TypeError):
+                client.vn.pages(page=2)
+            with pytest.raises(TypeError):
+                client.vn.iterate(page=2)
+
+    asyncio.run(scenario())
+
+
+def test_async_pages_construction_issues_no_request():
+    seen, handler = _pager({1: (_vns(0, 1), False)})
+
+    async def scenario():
+        async with AsyncClient(http_client=_aclient(handler)) as client:
+            gen = client.vn.pages()
+            igen = client.vn.iterate()
+            assert seen == []
+            await gen.__anext__()
+            await igen.__anext__()
+            await gen.aclose()
+            await igen.aclose()
+
+    asyncio.run(scenario())
+    assert len(seen) == 2
+
+
+def test_async_limit_truncates_final_page_to_exact_record_total():
+    page_map = {1: (_vns(0, 100), True), 2: (_vns(100, 100), True), 3: (_vns(200, 100), True)}
+    seen, handler = _pager(page_map)
+
+    async def scenario():
+        async with AsyncClient(http_client=_aclient(handler)) as client:
+            return [p async for p in client.vn.pages(limit=250)]
+
+    pages = asyncio.run(scenario())
+    assert [len(p.results) for p in pages] == [100, 100, 50]
+    assert [body["page"] for body in seen] == [1, 2, 3]
+
+
+def test_async_limit_applies_identically_to_iterate():
+    page_map = {1: (_vns(0, 100), True), 2: (_vns(100, 100), True), 3: (_vns(200, 100), True)}
+    _, handler = _pager(page_map)
+
+    async def scenario():
+        async with AsyncClient(http_client=_aclient(handler)) as client:
+            return [r async for r in client.vn.iterate(limit=250)]
+
+    records = asyncio.run(scenario())
+    assert len(records) == 250
+    assert records[-1].id == "v249"
+
+
+def test_async_truncated_page_preserves_api_more_flag():
+    _, handler = _pager({1: (_vns(0, 10), True)})
+
+    async def scenario():
+        async with AsyncClient(http_client=_aclient(handler)) as client:
+            return [p async for p in client.vn.pages(limit=4)]
+
+    pages = asyncio.run(scenario())
+    assert len(pages) == 1
+    assert len(pages[0].results) == 4
+    assert pages[0].more is True
+
+
+def test_async_start_page_resumes_walk():
+    seen, handler = _pager({137: (_vns(0, 3), False)})
+
+    async def scenario():
+        async with AsyncClient(http_client=_aclient(handler)) as client:
+            return [r async for r in client.vn.iterate(start_page=137)]
+
+    records = asyncio.run(scenario())
+    assert len(records) == 3
+    assert [body["page"] for body in seen] == [137]
+
+
+def test_async_empty_page_claiming_more_stops_walk():
+    seen, handler = _pager({1: ([], True)})
+
+    async def scenario():
+        async with AsyncClient(http_client=_aclient(handler)) as client:
+            return [p async for p in client.vn.pages()]
+
+    pages = asyncio.run(scenario())
+    assert [len(p.results) for p in pages] == [0]
+    assert len(seen) == 1
+
+
+@pytest.mark.parametrize(("kwargs", "match"), [({"limit": 0}, "limit"), ({"start_page": 0}, "start_page")])
+def test_async_invalid_bounds_raise_before_any_request(kwargs, match):
+    seen, handler = _pager({1: (_vns(0, 1), False)})
+
+    async def scenario():
+        async with AsyncClient(http_client=_aclient(handler)) as client:
+            with pytest.raises(ValueError, match=match):
+                client.vn.pages(**kwargs)
+            with pytest.raises(ValueError, match=match):
+                client.vn.iterate(**kwargs)
+
+    asyncio.run(scenario())
+    assert seen == []
+
+
+def test_async_request_failure_propagates_mid_walk():
+    page_map = {
+        1: (_vns(0, 2), True),
+        2: (_vns(2, 2), True),
+        3: httpx.Response(500, text="boom"),
+    }
+    _, handler = _pager(page_map)
+    seen_records = []
+
+    async def scenario():
+        async with AsyncClient(http_client=_aclient(handler)) as client:
+            with pytest.raises(VndbServerError):
+                async for record in client.vn.iterate():
+                    seen_records.append(record)
+
+    asyncio.run(scenario())
+    assert [r.id for r in seen_records] == ["v0", "v1", "v2", "v3"]

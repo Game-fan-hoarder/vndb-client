@@ -15,6 +15,9 @@ client.vn.query(
 )
 ```
 
+`query()` returns a single page. To walk a whole result set, use `iterate()` or
+`pages()` instead — see [Pagination](#pagination).
+
 ## Fetch one entity by id
 
 A by-id lookup is just a `query()` with an `id` equality filter. Every entity
@@ -85,22 +88,99 @@ with Client() as client:
 
 ## Pagination
 
-Results are paged. Use `results` for page size and `page` for the page number,
-and check `page.more` to decide whether to continue:
+Results are paged, but you rarely need to drive the paging yourself. Every
+resource exposes `iterate()`, which walks the pages for you and yields records:
 
 ```python
 from vndb_client import Client
 
 with Client() as client:
-    page_no = 1
-    while True:
-        page = client.vn.query(filters=["search", "=", "fate"], results=25, page=page_no)
-        for vn in page.results:
-            print(vn.id, vn.title)
-        if not page.more:
-            break
-        page_no += 1
+    for vn in client.vn.iterate(filters=["search", "=", "fate"]):
+        print(vn.id, vn.title)
 ```
+
+Requests are issued lazily — one per page, as you consume it — so nothing is
+sent until you start iterating. Each request asks for 100 records, the API's
+maximum, so a full walk costs the fewest requests. Lower it with `results` if
+you want smaller responses.
+
+The async client mirrors this with `async for`:
+
+```python
+import asyncio
+from vndb_client import AsyncClient
+
+async def main() -> None:
+    async with AsyncClient() as client:
+        async for vn in client.vn.iterate(filters=["search", "=", "fate"]):
+            print(vn.id, vn.title)
+
+asyncio.run(main())
+```
+
+### Working with page envelopes
+
+Use `pages()` instead when you need the envelope rather than bare records — for
+example to report progress against the total:
+
+```python
+from vndb_client import Client
+
+with Client() as client:
+    seen = 0
+    for page in client.vn.pages(filters=["search", "=", "fate"], count=True):
+        seen += len(page.results)
+        print(f"{seen} of {page.count}")
+```
+
+`iterate()` is the flattened form of `pages()` and delegates to it, so both share
+the same walk, parameters, and stopping rules.
+
+### Bounding a walk
+
+Neither method stops on its own — an unfiltered `iterate()` will walk the whole
+table. Pass `limit` to cap the walk. It counts **records, not pages**, and the
+final page is truncated so the total is exact:
+
+```python
+with Client() as client:
+    top = list(client.vn.iterate(sort="rating", reverse=True, limit=250))
+    assert len(top) == 250
+```
+
+That truncated last page keeps whatever `more` value the API reported: `more`
+answers "does the server hold further matches", which stays true even though
+your iteration stopped.
+
+### Resuming a long walk
+
+Neither method accepts `page` — the walk owns the counter. What it does accept is
+`start_page`, so a long walk that died part-way can resume instead of starting
+over. Exceptions propagate unchanged mid-iteration, and the records already
+yielded remain valid. For a walk long enough to hit rate limits, raise the retry
+ceiling as well:
+
+```python
+from vndb_client import Client, RetryConfig
+
+with Client(retry=RetryConfig(max_attempts=8)) as client:
+    for vn in client.vn.iterate(filters=["search", "=", "fate"], start_page=137):
+        print(vn.id)
+```
+
+### Three things to know
+
+- **Long walks evict the response cache.** With `cache_ttl` set, every page is a
+  distinct cache entry, and the cache holds `cache_maxsize` entries (default
+  128). A several-hundred-page walk will therefore evict everything else in it.
+- **`count` is returned on every page**, not just the first, when you request it.
+  The walk passes the flag through unchanged rather than asking only once.
+- **There is no snapshot consistency.** Paging is offset-based over live data, so
+  if the database changes mid-walk a record can be skipped or seen twice. This is
+  inherent to the API, not something the client can paper over.
+
+If you do want the page counter yourself, `query()` still takes `results` and
+`page` directly and returns a single `Page`.
 
 ## Counting
 

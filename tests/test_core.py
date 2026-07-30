@@ -5,7 +5,7 @@ import pytest
 
 from vndb_client import core
 from vndb_client.config import RetryConfig
-from vndb_client.core import RequestSpec, RetryPolicy
+from vndb_client.core import PageWalk, RequestSpec, RetryPolicy
 from vndb_client.exceptions import (
     VndbAPIError,
     VndbAuthError,
@@ -152,3 +152,62 @@ def test_build_query_request_omits_filter_echo_flags_when_unset():
     spec = core.build_query_request("vn", filters=["id", "=", "v1"])
     assert "compact_filters" not in spec.json
     assert "normalized_filters" not in spec.json
+
+
+# --- PageWalk ---
+
+
+def test_page_walk_unbounded_takes_whole_page():
+    walk = PageWalk()
+    assert walk.start_page == 1
+    assert walk.limit is None
+    assert walk.take(yielded=0, available=100) == 100
+    assert walk.take(yielded=900, available=100) == 100
+
+
+def test_page_walk_take_truncates_final_page_to_budget():
+    walk = PageWalk(limit=250)
+    assert walk.take(yielded=0, available=100) == 100
+    assert walk.take(yielded=100, available=100) == 100
+    assert walk.take(yielded=200, available=100) == 50
+
+
+def test_page_walk_take_on_exact_page_boundary():
+    walk = PageWalk(limit=200)
+    assert walk.take(yielded=100, available=100) == 100
+    # Budget exactly spent: nothing left to keep, and no further page wanted.
+    assert walk.take(yielded=200, available=100) == 0
+    assert walk.should_continue(more=True, yielded=200, available=100) is False
+
+
+def test_page_walk_take_never_exceeds_available():
+    assert PageWalk(limit=1000).take(yielded=0, available=7) == 7
+
+
+def test_page_walk_continues_while_more_and_budget_remains():
+    assert PageWalk().should_continue(more=True, yielded=500, available=100) is True
+    assert PageWalk(limit=250).should_continue(more=True, yielded=100, available=100) is True
+
+
+def test_page_walk_stops_when_api_reports_no_more():
+    assert PageWalk().should_continue(more=False, yielded=100, available=100) is False
+
+
+def test_page_walk_stops_when_budget_exhausted():
+    assert PageWalk(limit=250).should_continue(more=True, yielded=250, available=100) is False
+
+
+def test_page_walk_stops_on_empty_page_claiming_more():
+    assert PageWalk().should_continue(more=True, yielded=0, available=0) is False
+
+
+@pytest.mark.parametrize("start_page", [0, -1])
+def test_page_walk_rejects_start_page_below_one(start_page):
+    with pytest.raises(ValueError, match="start_page"):
+        PageWalk(start_page=start_page)
+
+
+@pytest.mark.parametrize("limit", [0, -5])
+def test_page_walk_rejects_non_positive_limit(limit):
+    with pytest.raises(ValueError, match="limit"):
+        PageWalk(limit=limit)

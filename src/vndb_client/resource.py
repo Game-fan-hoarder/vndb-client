@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Generic, TypeVar
 
+from vndb_client.config import MAX_RESULTS_PER_PAGE
 from vndb_client.core import PageWalk
 from vndb_client.fields import field_spec
 from vndb_client.filters.predicate import Predicate, resolve_filters
@@ -13,11 +14,6 @@ if TYPE_CHECKING:
     from vndb_client.client import AsyncClient, Client
 
 ModelT = TypeVar("ModelT", bound=VndbModel)
-
-#: Page size both paginating methods request by default — the API's maximum.
-#: Deliberately not validated client-side: this default encodes today's maximum
-#: as a choice rather than as a rule this client must keep in sync with VNDB.
-MAX_RESULTS_PER_PAGE = 100
 
 
 def _truncated(page: Page[ModelT], keep: int) -> Page[ModelT]:

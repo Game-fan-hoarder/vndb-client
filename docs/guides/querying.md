@@ -152,6 +152,14 @@ That truncated last page keeps whatever `more` value the API reported: `more`
 answers "does the server hold further matches", which stays true even though
 your iteration stopped.
 
+`limit` caps what you receive, not what is requested — the walk does not shrink
+the page size to fit the remaining budget. For a small `limit`, set `results` to
+match so you are not fetching 100 records to keep five:
+
+```python
+client.vn.iterate(sort="rating", reverse=True, results=5, limit=5)
+```
+
 ### Resuming a long walk
 
 Neither method accepts `page` — the walk owns the counter. What it does accept is

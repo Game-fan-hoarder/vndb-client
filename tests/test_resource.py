@@ -367,10 +367,13 @@ def test_limit_applies_identically_to_iterate():
 def test_truncated_page_preserves_api_more_flag():
     _, handler = _pager({1: (_vns(0, 10), True)})
     with Client(http_client=_client(handler)) as client:
-        pages = list(client.vn.pages(limit=4))
+        pages = list(client.vn.pages(limit=4, count=True))
     assert len(pages) == 1
     assert len(pages[0].results) == 4
     assert pages[0].more is True
+    # Truncation replaces results only; the rest of the envelope is untouched.
+    assert pages[0].count == 250
+    assert all(isinstance(r, VN) for r in pages[0].results)
 
 
 def test_limit_stops_exactly_on_page_boundary():
